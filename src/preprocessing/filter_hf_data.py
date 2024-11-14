@@ -5,7 +5,7 @@ import os
 csv_file_path = "data/mimic-iii/CHARTEVENTS.csv"
 output_dir = "data/mimic-iii_preprocessed"
 chunk_size = 1_000_000
-num_threads = 16
+num_threads = 12
 
 os.makedirs(output_dir, exist_ok=True)
 
@@ -38,7 +38,7 @@ with ThreadPoolExecutor(max_workers=num_threads) as executor:
     chunk_iter = pd.read_csv(
         csv_file_path,
         chunksize=chunk_size,
-        usecols=["SUBJECT_ID", "HADM_ID", "ITEMID", "VALUE"],
+        usecols=["SUBJECT_ID", "HADM_ID", "ITEMID", "VALUE", "CHARTTIME"],
     )
 
     futures = [executor.submit(process_chunk_for_all_item_ids, chunk) for chunk in chunk_iter]
