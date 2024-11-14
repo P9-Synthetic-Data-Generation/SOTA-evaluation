@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import os
 
 csv_file_path = "data/mimic-iii/CHARTEVENTS.csv"
-output_dir = "data/mimic-iii_preprocessed"
+output_dir = "data/mimic-iii_preprocessed/hf_vitals"
 chunk_size = 1_000_000
 num_threads = 12
 
