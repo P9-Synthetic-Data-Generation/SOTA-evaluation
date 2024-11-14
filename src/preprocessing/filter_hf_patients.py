@@ -36,16 +36,13 @@ for chunk in pd.read_csv(
     input_csv_path, chunksize=chunk_size, usecols=["SUBJECT_ID", "HADM_ID", "ICD9_CODE"], dtype={"ICD9_CODE": str}
 ):
     filtered_chunk = chunk[chunk["ICD9_CODE"].isin(target_icd9_codes)]
-    filtered_rows.append(filtered_chunk)
+    filtered_rows.append(filtered_chunk["HADM_ID"])
 
 filtered_df = pd.concat(filtered_rows, ignore_index=True)
 
-filtered_df.drop_duplicates(subset=["SUBJECT_ID", "ICD9_CODE"], inplace=True)
+filtered_df.drop_duplicates(inplace=True)
 
-unique_subject_count = filtered_df["SUBJECT_ID"].nunique()
-print(f"Number of unique SUBJECT_IDs: {unique_subject_count}")
-
-filtered_df.sort_values(by="SUBJECT_ID", inplace=True)
+filtered_df.sort_values(inplace=True)
 
 filtered_df.to_csv(output_csv_path, index=False)
 

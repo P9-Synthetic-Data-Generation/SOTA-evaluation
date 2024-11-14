@@ -2,15 +2,15 @@ import pandas as pd
 import os
 
 file_paths = {
-    "a_bp_mean": "data/mimic-iii_preprocessed/hf_vitals/arterial_blood_pressure_mean.csv",
-    "a_dbp": "data/mimic-iii_preprocessed/hf_vitals/arterial_diastolic_blood_pressure.csv",
-    "a_sbp": "data/mimic-iii_preprocessed/hf_vitals/arterial_systolic_blood_pressure.csv",
-    "hr": "data/mimic-iii_preprocessed/hf_vitals/heart_rate.csv",
-    "ni_bp_mean": "data/mimic-iii_preprocessed/hf_vitals/mean_noninvasive_blood_pressure.csv",
-    "ni_sbp": "data/mimic-iii_preprocessed/hf_vitals/noninvasive_systolic_blood_pressure.csv",
-    "ni_dbp": "data/mimic-iii_preprocessed/hf_vitals/noninvasive_diastolic_blood_pressure.csv",
-    "resp_rate": "data/mimic-iii_preprocessed/hf_vitals/respiratory_rate.csv",
-    "SpO2": "data/mimic-iii_preprocessed/hf_vitals/peripheral_capillary_oxygen_saturation.csv",
+    "a_bp_mean": "data/mimic-iii_preprocessed/vitals/arterial_blood_pressure_mean.csv",
+    "a_dbp": "data/mimic-iii_preprocessed/vitals/arterial_diastolic_blood_pressure.csv",
+    "a_sbp": "data/mimic-iii_preprocessed/vitals/arterial_systolic_blood_pressure.csv",
+    "hr": "data/mimic-iii_preprocessed/vitals/heart_rate.csv",
+    "ni_bp_mean": "data/mimic-iii_preprocessed/vitals/mean_noninvasive_blood_pressure.csv",
+    "ni_sbp": "data/mimic-iii_preprocessed/vitals/noninvasive_systolic_blood_pressure.csv",
+    "ni_dbp": "data/mimic-iii_preprocessed/vitals/noninvasive_diastolic_blood_pressure.csv",
+    "resp_rate": "data/mimic-iii_preprocessed/vitals/respiratory_rate.csv",
+    "SpO2": "data/mimic-iii_preprocessed/vitals/peripheral_capillary_oxygen_saturation.csv",
 }
 
 filtered_dfs = {}
@@ -32,7 +32,7 @@ for name, path in file_paths.items():
 
     print("here")
 
-output_dir = "data/mimic-iii_preprocessed/hf_vitals_5_measurements"
+output_dir = "data/mimic-iii_preprocessed/vitals_5_measurements"
 
 os.makedirs(output_dir, exist_ok=True)
 
