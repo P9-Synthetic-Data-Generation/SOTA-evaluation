@@ -6,10 +6,10 @@ from config import *
 
 def make_data_dirs(output_dirs: list[str]):
     """
-    Make the different directories to store the processed data in.
+    Creates directories for storing processed data if they do not already exist.
 
     Args:
-        output_dirs (list[str]): List of the paths to the directories.
+        output_dirs (list[str]): List of directory paths to be created.
     """
     for dir in output_dirs:
         os.makedirs(dir, exist_ok=True)
@@ -17,15 +17,18 @@ def make_data_dirs(output_dirs: list[str]):
     print("Data directories created")
 
 
-def filter_hf_data(input_csv_path: str, num_threads: int, chunk_size: int, item_id_dict: dict[str], output_dir: str):
-    """_summary_
+def filter_hf_data(
+    input_csv_path: str, num_threads: int, chunk_size: int, item_id_dict: dict[int, str], output_dir: str
+):
+    """
+    Filters heart failure-related data by ITEMID and writes the results to separate CSV files.
 
     Args:
-        input_csv_path (str): _description_
-        num_threads (int): _description_
-        chunk_size (int): _description_
-        item_id_dict (dict[str]): _description_
-        output_dir (str): _description_
+        input_csv_path (str): Path to the input CSV file containing raw data.
+        num_threads (int): Number of threads for concurrent processing.
+        chunk_size (int): Number of rows to read per chunk.
+        item_id_dict (dict[int, str]): Dictionary mapping ITEMIDs to their corresponding output file names.
+        output_dir (str): Directory where the filtered data files will be saved.
     """
     print(f"Filtering heart failure data from {input_csv_path}...")
 
@@ -51,13 +54,14 @@ def filter_hf_data(input_csv_path: str, num_threads: int, chunk_size: int, item_
     print(f"Finished filtering heart failure data to {output_dir}")
 
 
-def filter_hf_patients(input_csv_path: str, output_csv_path: str, target_icd9_codes: dict[str]):
-    """_summary_
+def filter_hf_patients(input_csv_path: str, output_csv_path: str, target_icd9_codes: list[str]):
+    """
+    Filters patient data based on heart failure ICD-9 codes and writes the results to a CSV file.
 
     Args:
-        input_csv_path (str): _description_
-        output_csv_path (str): _description_
-        target_icd9_codes (dict[str]): _description_
+        input_csv_path (str): Path to the input CSV file containing patient data.
+        output_csv_path (str): Path to the output CSV file for filtered patient data.
+        target_icd9_codes (list[str]): List of target ICD-9 codes to filter by.
     """
     filtered_rows = []
 
@@ -78,12 +82,13 @@ def filter_hf_patients(input_csv_path: str, output_csv_path: str, target_icd9_co
 
 
 def filter_5_measurements(file_paths: str, input_csv_path: str, output_dirs: str):
-    """_summary_
+    """
+    Filters heart failure data to keep only the first five measurements for HADM_IDs that are common across all vitals.
 
     Args:
-        file_paths (str): _description_
-        input_csv_path (str): _description_
-        output_dirs (str): _description_
+        file_paths (dict[str, str]): Dictionary of file paths for input data, keyed by dataset name.
+        input_csv_path (str): Path to the preprocessed patients CSV file.
+        output_dirs (list[str]): List of output directories for saving filtered data.
     """
     print("Filtering heart failure data to keep only five first rows with common HADM_ID...")
     filtered_dfs = {}
@@ -98,14 +103,15 @@ def filter_5_measurements(file_paths: str, input_csv_path: str, output_dirs: str
         trimmed_df = sorted_df.groupby("HADM_ID").head(5)
         filtered_dfs[name] = trimmed_df
 
-    def _find_common_hadm_ids(filtered_dfs: dict[pd.DataFrame]) -> list[str]:
-        """_summary_
+    def _find_common_hadm_ids(filtered_dfs: dict[str, pd.DataFrame]) -> list[str]:
+        """
+        Identifies HADM_IDs common to all vitals.
 
         Args:
-            filtered_dfs (dict[pd.DataFrame]): _description_
+            filtered_dfs (dict[str, pd.DataFrame]): Dictionary of filtered dataframes, keyed by dataset name.
 
         Returns:
-            list[str]: _description_
+            set[str]: Set of common HADM_IDs found across all vitals.
         """
         common_hadm_ids = None
 
