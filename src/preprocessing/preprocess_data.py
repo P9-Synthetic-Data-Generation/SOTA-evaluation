@@ -1,5 +1,7 @@
 import os
+import pickle
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import numpy as np
 import pandas as pd
 from config import *
 
@@ -156,18 +158,75 @@ def filter_5_measurements(file_paths: str, input_csv_path: str, output_dirs: str
         print(f"{name} finished")
 
 
+def combine_5_measurements(input_dirs: list[str]):
+    """
+    Combines multiple 5-measurement CSV files from different directories into a single DataFrame,
+    and saves the combined data along with labels into pickle files.
+
+    This function processes CSV files from each directory in `input_dirs`, where each directory contains
+    data about vital measurements. It extracts specific columns ('HADM_ID' and 'VALUE') from each file,
+    and appends them into a combined DataFrame. Depending on the directory name, it assigns binary labels
+    (1 for "vitals_5_measurements_hf" and 0 for "vitals_5_measurements_not_hf") to the rows.
+    The combined data and labels are then saved in pickle format.
+
+    Args:
+        input_dirs (list[str]): A list of directory paths containing the 5-measurement CSV files to process.
+            Each directory should contain CSV files with 'HADM_ID' and 'VALUE' columns.
+
+    Saves:
+        - A pickle file containing the combined data (features).
+        - A pickle file containing the associated labels (binary: 1 for heart failure, 0 for non-heart failure).
+    """
+    full_df = pd.DataFrame()
+    labels = []
+
+    for dir in input_dirs:
+        combined_df = pd.DataFrame()
+        for filename in os.listdir(dir):
+            filepath = os.path.join(dir, filename)
+            df = pd.read_csv(filepath)
+
+            if "HADM_ID" not in combined_df.columns:
+                combined_df["HADM_ID"] = df["HADM_ID"]
+
+            combined_df[filename.split(".")[0]] = df["VALUE"]
+
+        if os.path.split(dir)[1] == "vitals_5_measurements_hf":
+            labels += [1 for _ in range(0, len(combined_df), 5)]
+        elif os.path.split(dir)[1] == "vitals_5_measurements_not_hf":
+            labels += [0 for _ in range(0, len(combined_df), 5)]
+
+        full_df = pd.concat([full_df, combined_df], ignore_index=True)
+
+    data = full_df.to_numpy()
+    labels = np.array(labels)
+
+    os.makedirs(os.path.join("data", "mimic-iii_preprocessed", "pickle_data"), exist_ok=True)
+
+    print(
+        f"Data combined and saved in pickle format. Shape of data: {data.shape}. True labels: {sum(labels)}/{len(labels)}."
+    )
+
+    with open(os.path.join(os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "data.pkl")), "wb") as f:
+        pickle.dump(data, f)
+
+    with open(os.path.join(os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "labels.pkl")), "wb") as f:
+        pickle.dump(labels, f)
+
+
 if __name__ == "__main__":
-    make_data_dirs(output_dirs=OUTPUT_DIRS)
-    filter_hf_data(
-        input_csv_path=VITALS_CSV_PATH,
-        num_threads=NUM_THREADS,
-        chunk_size=CHUNK_SIZE,
-        item_id_dict=ITEM_ID_DICT,
-        output_dir=OUTPUT_DIRS[1],
-    )
-    filter_hf_patients(
-        input_csv_path=PATIENTS_CSV_PATH, output_csv_path=OUTPUT_CSV_PATH, target_icd9_codes=TARGET_ICD9_CODES
-    )
-    filter_5_measurements(
-        file_paths=VITALS_FILE_PATHS, input_csv_path=PATIENTS_PREPROCESSED_CSV_PATH, output_dirs=OUTPUT_DIRS[3:5]
-    )
+    # make_data_dirs(output_dirs=OUTPUT_DIRS)
+    # filter_hf_data(
+    #     input_csv_path=VITALS_CSV_PATH,
+    #     num_threads=NUM_THREADS,
+    #     chunk_size=CHUNK_SIZE,
+    #     item_id_dict=ITEM_ID_DICT,
+    #     output_dir=OUTPUT_DIRS[1],
+    # )
+    # filter_hf_patients(
+    #     input_csv_path=PATIENTS_CSV_PATH, output_csv_path=OUTPUT_CSV_PATH, target_icd9_codes=TARGET_ICD9_CODES
+    # )
+    # filter_5_measurements(
+    #     file_paths=VITALS_FILE_PATHS, input_csv_path=PATIENTS_PREPROCESSED_CSV_PATH, output_dirs=OUTPUT_DIRS[3:5]
+    # )
+    combine_5_measurements(input_dirs=PICKLE_INPUT_DIRS)

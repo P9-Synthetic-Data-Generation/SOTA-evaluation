@@ -7,6 +7,11 @@ VITALS_CSV_PATH = "data/mimic-iii/CHARTEVENTS.csv"
 PATIENTS_CSV_PATH = "data/mimic-iii/DIAGNOSES_ICD.csv"
 PATIENTS_PREPROCESSED_CSV_PATH = "data/mimic-iii_preprocessed/heart_failure_patients.csv"
 
+PICKLE_INPUT_DIRS = [
+    "data/mimic-iii_preprocessed/vitals_5_measurements_hf",
+    "data/mimic-iii_preprocessed/vitals_5_measurements_not_hf",
+]
+
 OUTPUT_DIRS = [
     "data/mimic-iii_preprocessed",
     "data/mimic-iii_preprocessed/vitals",
