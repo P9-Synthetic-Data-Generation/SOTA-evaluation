@@ -1,6 +1,5 @@
 from keras import Optimizer
 from keras import backend
-
 import tensorflow as tf
 
 
@@ -11,14 +10,13 @@ def clip_norm(g, c, n):
 
 
 class NoisyAdam(Optimizer):
-    def __init__(self, lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-8, decay=0.0, noise=0.0, **kwargs):
-        super(NoisyAdam, self).__init__(**kwargs)
-        self.iterations = backend.Variable(0, name="iterations")
-        self.lr = backend.variable(lr, name="lr")
-        self.beta_1 = backend.variable(beta_1, name="beta_1")
-        self.beta_2 = backend.variable(beta_2, name="beta_2")
+    def __init__(self, learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-8, decay=0.0, noise=0.0, **kwargs):
+        super(NoisyAdam, self).__init__(learning_rate=learning_rate, **kwargs)
+        self.learning_rate = tf.Variable(learning_rate, name="learning_rate")
+        self.beta_1 = tf.Variable(beta_1, name="beta_1")
+        self.beta_2 = tf.Variable(beta_2, name="beta_2")
         self.epsilon = epsilon
-        self.decay = backend.variable(decay, name="decay")
+        self.decay = tf.Variable(decay, name="decay")
         self.initial_decay = decay
         self.noise = noise
 
@@ -37,8 +35,7 @@ class NoisyAdam(Optimizer):
     def get_updates(self, params, constraints, loss):
         grads = self.get_gradients(loss, params)
         self.updates = [backend.update_add(self.iterations, 1)]
-
-        lr = self.lr
+        lr = self.learning_rate
         if self.initial_decay > 0:
             lr *= 1.0 / (1.0 + self.decay * self.iterations)
 
@@ -59,7 +56,6 @@ class NoisyAdam(Optimizer):
             self.updates.append(backend.update(v, v_t))
 
             new_p = p_t
-            # apply constraints
             if p in constraints:
                 c = constraints[p]
                 new_p = c(new_p)
@@ -68,7 +64,7 @@ class NoisyAdam(Optimizer):
 
     def get_config(self):
         config = {
-            "lr": float(backend.get_value(self.lr)),
+            "learning_rate": float(backend.get_value(self.learning_rate)),
             "beta_1": float(backend.get_value(self.beta_1)),
             "beta_2": float(backend.get_value(self.beta_2)),
             "decay": float(backend.get_value(self.decay)),

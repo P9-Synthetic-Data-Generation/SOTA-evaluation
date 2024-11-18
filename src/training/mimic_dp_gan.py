@@ -13,9 +13,8 @@ import numpy as np
 import random as rn
 import os
 import argparse
-import time
 
-from privacy_accountant import accountant, utils
+from privacy_accountant import accountant
 from custom_keras.noisy_optimizers import NoisyAdam
 
 training_size = 7500
@@ -118,7 +117,7 @@ if __name__ == "__main__":
 
     # setting seed for reproducibility
     np.random.seed(args.seed)
-    tf.set_random_seed(args.seed)
+    tf.random.set_seed(args.seed)
     rn.seed(args.seed)
 
     # Adam parameters suggested in https://arxiv.org/abs/1511.06434
@@ -126,7 +125,7 @@ if __name__ == "__main__":
     adam_beta_1 = 0.5
 
     directory = (
-        "./MIMIC/output/"
+        "./AC-GAN/output/"
         + str(args.prefix)
         + str(args.noise)
         + "_"
@@ -141,25 +140,27 @@ if __name__ == "__main__":
     )
 
     if not os.path.exists(directory):
-        os.mkdir(directory)
+        os.makedirs(directory)
 
     if args.clip_value > 0:
         # build the discriminator
         discriminator = build_discriminator()
         discriminator.compile(
-            optimizer=NoisyAdam(lr=adam_lr, beta_1=adam_beta_1, clipnorm=args.clip_value, noise=args.noise),
+            optimizer=NoisyAdam(learning_rate=adam_lr, beta_1=adam_beta_1, clipnorm=args.clip_value, noise=args.noise),
             loss=["binary_crossentropy", "sparse_categorical_crossentropy"],
         )
     else:
         discriminator = build_discriminator()
         discriminator.compile(
-            optimizer=keras.optimizers.Adam(lr=adam_lr, beta_1=adam_beta_1),
+            optimizer=keras.optimizers.Adam(learning_rate=adam_lr, beta_1=adam_beta_1),
             loss=["binary_crossentropy", "sparse_categorical_crossentropy"],
         )
 
     # build the generator
     generator = build_generator(latent_size)
-    generator.compile(optimizer=keras.optimizers.Adam(lr=adam_lr, beta_1=adam_beta_1), loss="binary_crossentropy")
+    generator.compile(
+        optimizer=keras.optimizers.Adam(learning_rate=adam_lr, beta_1=adam_beta_1), loss="binary_crossentropy"
+    )
 
     latent = keras.Input(shape=(latent_size,))
     image_class = keras.Input(shape=(1,), dtype="int32")
@@ -173,13 +174,13 @@ if __name__ == "__main__":
     combined = keras.Model([latent, image_class], [fake, aux])
 
     combined.compile(
-        optimizer=keras.optimizers.Adam(lr=adam_lr, beta_1=adam_beta_1),
+        optimizer=keras.optimizers.Adam(learning_rate=adam_lr, beta_1=adam_beta_1),
         loss=["binary_crossentropy", "sparse_categorical_crossentropy"],
     )
 
     # get our input data
-    X_input = pickle.load(open("/data/SPRINT/MIMIC/X_processed_5.pkl", "rb"))
-    y_input = pickle.load(open("/data/SPRINT/MIMIC/y_processed_5.pkl", "rb"))
+    X_input = pickle.load(open(os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "data.pkl"), "rb"))
+    y_input = pickle.load(open(os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "labels.pkl"), "rb"))
     print(X_input.shape, y_input.shape)
 
     X_train = X_input[:training_size]
@@ -196,12 +197,12 @@ if __name__ == "__main__":
     test_history = defaultdict(list)
     privacy_history = []
 
-    config = tf.ConfigProto()
+    config = tf.compat.v1.ConfigProto()
     config.gpu_options.allow_growth = True
 
-    with tf.Session(config=config) as sess:
-        eps = tf.placeholder(tf.float32)
-        delta = tf.placeholder(tf.float32)
+    with tf.compat.v1.Session(config=config) as sess:
+        eps = tf.compat.v1.placeholder(tf.float32)
+        delta = tf.compat.v1.placeholder(tf.float32)
 
         for epoch in range(epochs):
             print("Epoch {} of {}".format(epoch + 1, epochs))
@@ -214,7 +215,6 @@ if __name__ == "__main__":
             epoch_gen_loss = []
             epoch_disc_loss = []
 
-            train_start_time = time.clock()
             for index in range(num_batches):
                 progress_bar.update(index)
                 # generate a new batch of noise
@@ -222,7 +222,7 @@ if __name__ == "__main__":
 
                 # get a batch of real patients
                 image_batch = np.expand_dims(X_train[random_sample[index]], axis=1)
-                label_batch = np.expand_dims(y_train[random_sample[index]], axis=1)
+                label_batch = y_train[random_sample[index], np.newaxis]
 
                 # sample some labels from p_c
                 sampled_labels = np.random.randint(0, 2, batch_size)
@@ -253,9 +253,7 @@ if __name__ == "__main__":
                 epoch_gen_loss.append(
                     combined.train_on_batch([noise, sampled_labels.reshape((-1, 1))], [trick, sampled_labels])
                 )
-            print("\n Train time: ", time.clock() - train_start_time)
             print("accum privacy, batches: " + str(num_batches))
-            priv_start_time = time.clock()
 
             # separate privacy accumulation for speed
             # privacy_accum_op = priv_accountant.accumulate_privacy_spending(
