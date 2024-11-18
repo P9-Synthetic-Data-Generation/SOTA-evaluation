@@ -10,7 +10,6 @@ PATIENTS_PREPROCESSED_CSV_PATH = "data/mimic-iii_preprocessed/heart_failure_pati
 OUTPUT_DIRS = [
     "data/mimic-iii_preprocessed",
     "data/mimic-iii_preprocessed/vitals",
-    "data/mimic-iii_preprocessed/vitals_5_measurements",
     "data/mimic-iii_preprocessed/vitals_5_measurements_hf",
     "data/mimic-iii_preprocessed/vitals_5_measurements_not_hf",
 ]
