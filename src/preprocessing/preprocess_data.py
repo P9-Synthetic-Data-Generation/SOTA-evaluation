@@ -20,7 +20,11 @@ def make_data_dirs(output_dirs: list[str]):
 
 
 def filter_hf_data(
-    input_csv_path: str, num_threads: int, chunk_size: int, item_id_dict: dict[int, str], output_dir: str
+    input_csv_path: str,
+    num_threads: int,
+    chunk_size: int,
+    item_id_dict: dict[int, str],
+    output_dir: str,
 ):
     """
     Filters heart failure-related data by ITEMID and writes the results to separate CSV files.
@@ -39,7 +43,9 @@ def filter_hf_data(
             filtered_chunk = chunk[chunk["ITEMID"] == item_id]
             filtered_csv_path = os.path.join(output_dir, f"{item_id_dict[item_id]}.csv")
             write_header = not os.path.exists(filtered_csv_path)
-            filtered_chunk.to_csv(filtered_csv_path, mode="a", index=False, header=write_header)
+            filtered_chunk.to_csv(
+                filtered_csv_path, mode="a", index=False, header=write_header
+            )
 
     with ThreadPoolExecutor(max_workers=num_threads) as executor:
         chunk_iter = pd.read_csv(
@@ -56,7 +62,9 @@ def filter_hf_data(
     print(f"Finished filtering heart failure data to {output_dir}")
 
 
-def filter_hf_patients(input_csv_path: str, output_csv_path: str, target_icd9_codes: list[str]):
+def filter_hf_patients(
+    input_csv_path: str, output_csv_path: str, target_icd9_codes: list[str]
+):
     """
     Filters patient data based on heart failure ICD-9 codes and writes the results to a CSV file.
 
@@ -92,7 +100,9 @@ def filter_5_measurements(file_paths: str, input_csv_path: str, output_dirs: str
         input_csv_path (str): Path to the preprocessed patients CSV file.
         output_dirs (list[str]): List of output directories for saving filtered data.
     """
-    print("Filtering heart failure data to keep only five first rows with common HADM_ID...")
+    print(
+        "Filtering heart failure data to keep only five first rows with common HADM_ID..."
+    )
     filtered_dfs = {}
 
     for name, path in file_paths.items():
@@ -134,7 +144,7 @@ def filter_5_measurements(file_paths: str, input_csv_path: str, output_dirs: str
 
     common_hadm_ids = _find_common_hadm_ids(filtered_dfs)
 
-    for name in filtered_dfs.keys():        
+    for name in filtered_dfs.keys():
         hf_csv_path = os.path.join(output_dirs[0], f"{name}.csv")
         not_hf_csv_path = os.path.join(output_dirs[1], f"{name}.csv")
 
@@ -147,12 +157,20 @@ def filter_5_measurements(file_paths: str, input_csv_path: str, output_dirs: str
                 if hadm_id in hf_admissions:
                     hf_write_header = not os.path.exists(hf_csv_path)
                     filtered_df.to_csv(
-                        hf_csv_path, mode="a", index=False, header=hf_write_header, columns=["HADM_ID", "VALUE"]
+                        hf_csv_path,
+                        mode="a",
+                        index=False,
+                        header=hf_write_header,
+                        columns=["HADM_ID", "VALUE"],
                     )
                 else:
                     not_hf_write_header = not os.path.exists(not_hf_csv_path)
                     filtered_df.to_csv(
-                        not_hf_csv_path, mode="a", index=False, header=not_hf_write_header, columns=["HADM_ID", "VALUE"]
+                        not_hf_csv_path,
+                        mode="a",
+                        index=False,
+                        header=not_hf_write_header,
+                        columns=["HADM_ID", "VALUE"],
                     )
 
         print(f"{name} finished")
@@ -202,31 +220,69 @@ def combine_5_measurements(input_dirs: list[str]):
     labels = np.array(labels)
 
     os.makedirs(os.path.join("data", "mimic-iii_preprocessed", "pickle_data"), exist_ok=True)
-
-    print(
-        f"Data combined and saved in pickle format. Shape of data: {data.shape}. True labels: {sum(labels)}/{len(labels)}."
-    )
-
-    with open(os.path.join(os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "data.pkl")), "wb") as f:
-        pickle.dump(data, f)
-
     with open(os.path.join(os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "labels.pkl")), "wb") as f:
         pickle.dump(labels, f)
+
+    return full_df
+
+
+def reshape_vital_data(df: pd.DataFrame):
+    """
+    Reshapes a dataframe with shape (41440, 10) into shape (8228, 9, 5), where:
+    - 8228 is the number of patients (HADM_IDs).
+    - 9 is the number of vital types (each vital has 5 measurements).
+    - 5 is the number of measurements per patient.
+
+    Args:
+        df (pd.DataFrame): A dataframe with shape (41440, 10) where:
+            - The first column is 'HADM_ID' (patient ID).
+            - The next 9 columns represent 9 vital measurements.
+            - There are 5 rows per patient.
+
+    Returns:
+        reshaped_data (np.ndarray): A numpy array with shape (8228, 9, 5) containing the reshaped data.
+    """
+
+    hadm_ids = df["HADM_ID"].values
+    vital_data = df.iloc[:, 1:].values #exclude hadm_id column
+
+    reshaped_data = []
+
+    for hadm_id in np.unique(hadm_ids):
+        patient_data = vital_data[hadm_ids == hadm_id]
+
+        if patient_data.shape[0] != 5:
+            raise ValueError(f"Patient {hadm_id} does not have exactly 5 measurements.")
+
+        # Reshape patient data into (9, 5) format (9 vitals, 5 measurements)
+        reshaped_patient_data = patient_data.T
+        reshaped_data.append(reshaped_patient_data)
+
+    # Convert the reshaped data into a numpy array of shape (8228, 9, 5)
+    reshaped_data = np.array(reshaped_data)
+    with open(os.path.join(os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "reshaped_data.pkl")), "wb") as f:
+        pickle.dump(reshaped_data, f)
+
+    # Verify the shape of the resulting data
+    print(f"Reshaped data shape: {reshaped_data.shape}")
+
+    return reshaped_data
 
 
 if __name__ == "__main__":
     #make_data_dirs(output_dirs=OUTPUT_DIRS)
     #filter_hf_data(
-    #    input_csv_path=VITALS_CSV_PATH,
-    #    num_threads=NUM_THREADS,
-    #    chunk_size=CHUNK_SIZE,
-    #    item_id_dict=ITEM_ID_DICT,
-    #    output_dir=OUTPUT_DIRS[1],
+    #   input_csv_path=VITALS_CSV_PATH,
+    #   num_threads=NUM_THREADS,
+    #   chunk_size=CHUNK_SIZE,
+    #   item_id_dict=ITEM_ID_DICT,
+    #   output_dir=OUTPUT_DIRS[1],
     #)
     #filter_hf_patients(
-    #    input_csv_path=PATIENTS_CSV_PATH, output_csv_path=OUTPUT_CSV_PATH, target_icd9_codes=TARGET_ICD9_CODES
+       #input_csv_path=PATIENTS_CSV_PATH, output_csv_path=OUTPUT_CSV_PATH, target_icd9_codes=TARGET_ICD9_CODES
     #)
-    filter_5_measurements(
-        file_paths=VITALS_FILE_PATHS, input_csv_path=PATIENTS_PREPROCESSED_CSV_PATH, output_dirs=OUTPUT_DIRS[2:5]
-    )
-    combine_5_measurements(input_dirs=PICKLE_INPUT_DIRS)
+    #filter_5_measurements(
+    #file_paths=VITALS_FILE_PATHS, input_csv_path=PATIENTS_PREPROCESSED_CSV_PATH, output_dirs=OUTPUT_DIRS[2:5]
+    #)
+    df = combine_5_measurements(input_dirs=PICKLE_INPUT_DIRS)
+    reshape_vital_data(df)
