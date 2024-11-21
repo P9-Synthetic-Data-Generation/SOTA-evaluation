@@ -216,35 +216,48 @@ def combine_5_measurements(input_dirs: list[str]):
 
         full_df = pd.concat([full_df, combined_df], ignore_index=True)
 
-    data = full_df.to_numpy()
+    reshaped_df = reshape_data(full_df)
     labels = np.array(labels)
+    reshaped_df = np.array(reshaped_df)
 
-    os.makedirs(os.path.join("data", "mimic-iii_preprocessed", "pickle_data"), exist_ok=True)
-    with open(os.path.join(os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "labels.pkl")), "wb") as f:
+    os.makedirs(
+        os.path.join("data", "mimic-iii_preprocessed", "pickle_data"), exist_ok=True
+    )
+    with open(
+        os.path.join(
+            os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "labels.pkl")
+        ),
+        "wb",
+    ) as f:
         pickle.dump(labels, f)
+    with open(
+        os.path.join(
+            os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "data.pkl")
+        ),
+        "wb",
+    ) as f:
+        pickle.dump(reshaped_df, f)
 
-    return full_df
 
-
-def reshape_vital_data(df: pd.DataFrame):
+def reshape_data(df: pd.DataFrame):
     """
-    Reshapes a dataframe with shape (41440, 10) into shape (8228, 9, 5), where:
-    - 8228 is the number of patients (HADM_IDs).
+    Reshapes a dataframe into (x, 9, 5), where:
+    - x is the number of patients (HADM_IDs).
     - 9 is the number of vital types (each vital has 5 measurements).
     - 5 is the number of measurements per patient.
 
     Args:
-        df (pd.DataFrame): A dataframe with shape (41440, 10) where:
+        df (pd.DataFrame): A dataframe where:
             - The first column is 'HADM_ID' (patient ID).
             - The next 9 columns represent 9 vital measurements.
             - There are 5 rows per patient.
 
     Returns:
-        reshaped_data (np.ndarray): A numpy array with shape (8228, 9, 5) containing the reshaped data.
+        reshaped_data (np.ndarray): A numpy array with shape (x, 9, 5) containing the reshaped data.
     """
 
     hadm_ids = df["HADM_ID"].values
-    vital_data = df.iloc[:, 1:].values #exclude hadm_id column
+    vital_data = df.iloc[:, 1:].values  # exclude hadm_id column
 
     reshaped_data = []
 
@@ -258,31 +271,25 @@ def reshape_vital_data(df: pd.DataFrame):
         reshaped_patient_data = patient_data.T
         reshaped_data.append(reshaped_patient_data)
 
-    # Convert the reshaped data into a numpy array of shape (8228, 9, 5)
-    reshaped_data = np.array(reshaped_data)
-    with open(os.path.join(os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "reshaped_data.pkl")), "wb") as f:
-        pickle.dump(reshaped_data, f)
-
-    # Verify the shape of the resulting data
-    print(f"Reshaped data shape: {reshaped_data.shape}")
+    #print(f"Reshaped data shape: {reshaped_data.shape}")
 
     return reshaped_data
 
 
 if __name__ == "__main__":
-    #make_data_dirs(output_dirs=OUTPUT_DIRS)
-    #filter_hf_data(
+    # make_data_dirs(output_dirs=OUTPUT_DIRS)
+    # filter_hf_data(
     #   input_csv_path=VITALS_CSV_PATH,
     #   num_threads=NUM_THREADS,
     #   chunk_size=CHUNK_SIZE,
     #   item_id_dict=ITEM_ID_DICT,
     #   output_dir=OUTPUT_DIRS[1],
-    #)
-    #filter_hf_patients(
-       #input_csv_path=PATIENTS_CSV_PATH, output_csv_path=OUTPUT_CSV_PATH, target_icd9_codes=TARGET_ICD9_CODES
-    #)
-    #filter_5_measurements(
-    #file_paths=VITALS_FILE_PATHS, input_csv_path=PATIENTS_PREPROCESSED_CSV_PATH, output_dirs=OUTPUT_DIRS[2:5]
-    #)
-    df = combine_5_measurements(input_dirs=PICKLE_INPUT_DIRS)
-    reshape_vital_data(df)
+    # )
+    # filter_hf_patients(
+    # input_csv_path=PATIENTS_CSV_PATH, output_csv_path=OUTPUT_CSV_PATH, target_icd9_codes=TARGET_ICD9_CODES
+    # )
+    # filter_5_measurements(
+    # file_paths=VITALS_FILE_PATHS, input_csv_path=PATIENTS_PREPROCESSED_CSV_PATH, output_dirs=OUTPUT_DIRS[2:5]
+    # )
+    combine_5_measurements(input_dirs=PICKLE_INPUT_DIRS)
+
