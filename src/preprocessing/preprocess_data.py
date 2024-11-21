@@ -134,7 +134,7 @@ def filter_5_measurements(file_paths: str, input_csv_path: str, output_dirs: str
 
     common_hadm_ids = _find_common_hadm_ids(filtered_dfs)
 
-    for name in filtered_dfs.keys():
+    for name in filtered_dfs.keys():        
         hf_csv_path = os.path.join(output_dirs[0], f"{name}.csv")
         not_hf_csv_path = os.path.join(output_dirs[1], f"{name}.csv")
 
@@ -215,18 +215,18 @@ def combine_5_measurements(input_dirs: list[str]):
 
 
 if __name__ == "__main__":
-    # make_data_dirs(output_dirs=OUTPUT_DIRS)
-    # filter_hf_data(
-    #     input_csv_path=VITALS_CSV_PATH,
-    #     num_threads=NUM_THREADS,
-    #     chunk_size=CHUNK_SIZE,
-    #     item_id_dict=ITEM_ID_DICT,
-    #     output_dir=OUTPUT_DIRS[1],
-    # )
-    # filter_hf_patients(
-    #     input_csv_path=PATIENTS_CSV_PATH, output_csv_path=OUTPUT_CSV_PATH, target_icd9_codes=TARGET_ICD9_CODES
-    # )
-    # filter_5_measurements(
-    #     file_paths=VITALS_FILE_PATHS, input_csv_path=PATIENTS_PREPROCESSED_CSV_PATH, output_dirs=OUTPUT_DIRS[3:5]
-    # )
+    #make_data_dirs(output_dirs=OUTPUT_DIRS)
+    #filter_hf_data(
+    #    input_csv_path=VITALS_CSV_PATH,
+    #    num_threads=NUM_THREADS,
+    #    chunk_size=CHUNK_SIZE,
+    #    item_id_dict=ITEM_ID_DICT,
+    #    output_dir=OUTPUT_DIRS[1],
+    #)
+    #filter_hf_patients(
+    #    input_csv_path=PATIENTS_CSV_PATH, output_csv_path=OUTPUT_CSV_PATH, target_icd9_codes=TARGET_ICD9_CODES
+    #)
+    filter_5_measurements(
+        file_paths=VITALS_FILE_PATHS, input_csv_path=PATIENTS_PREPROCESSED_CSV_PATH, output_dirs=OUTPUT_DIRS[2:5]
+    )
     combine_5_measurements(input_dirs=PICKLE_INPUT_DIRS)

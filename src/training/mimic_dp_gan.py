@@ -1,13 +1,16 @@
 from __future__ import print_function
 
+import sys
+sys.stdout.reconfigure(encoding='utf-8')
+
 from collections import defaultdict
 
 import pickle
 from PIL import Image
 
 # from six.moves import range
-
 import tensorflow as tf
+
 import keras
 import numpy as np
 import random as rn
@@ -231,6 +234,10 @@ if __name__ == "__main__":
                 # conditioner. We reshape the sampled labels to be
                 # (batch_size, 1) so that we can feed them into the embedding
                 # layer as a length one sequence
+                
+                print(type(noise), noise.shape)
+                print(type(sampled_labels), sampled_labels.shape)
+                
                 generated_images = generator.predict([noise, sampled_labels.reshape((-1, 1))], verbose=0)
 
                 X = np.concatenate((image_batch, generated_images))
