@@ -271,8 +271,6 @@ def reshape_data(df: pd.DataFrame):
         reshaped_patient_data = patient_data.T
         reshaped_data.append(reshaped_patient_data)
 
-    #print(f"Reshaped data shape: {reshaped_data.shape}")
-
     return reshaped_data
 
 
@@ -292,4 +290,3 @@ if __name__ == "__main__":
     # file_paths=VITALS_FILE_PATHS, input_csv_path=PATIENTS_PREPROCESSED_CSV_PATH, output_dirs=OUTPUT_DIRS[2:5]
     # )
     combine_5_measurements(input_dirs=PICKLE_INPUT_DIRS)
-
