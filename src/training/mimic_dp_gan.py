@@ -10,6 +10,7 @@ from PIL import Image
 
 # from six.moves import range
 import tensorflow as tf
+tf.compat.v1.disable_v2_behavior()
 
 import keras
 import numpy as np
@@ -47,7 +48,7 @@ def build_generator(latent_size):
     )
 
     # dense layer to reshape
-    cnn.summary()
+    #cnn.summary()
 
     # this is the z space commonly refered to in GAN papers
     latent = keras.Input(shape=(latent_size,))
@@ -87,7 +88,7 @@ def build_discriminator():
     patient = keras.Input(shape=(1, 9, 5))
 
     features = cnn(patient)
-    cnn.summary()
+    #cnn.summary()
 
     fake = keras.layers.Dense(1, activation="sigmoid", name="generation")(features)
     # aux could probably be 1 sigmoid too...
@@ -221,26 +222,42 @@ if __name__ == "__main__":
             for index in range(num_batches):
                 progress_bar.update(index)
                 # generate a new batch of noise
-                noise = np.random.uniform(-1, 1, (batch_size, latent_size))
+                noise = tf.random.uniform((batch_size, latent_size), minval=-1, maxval=1, dtype=tf.float32)
+                #noise = np.random.uniform(-1, 1, (batch_size, latent_size))
 
                 # get a batch of real patients
                 image_batch = np.expand_dims(X_train[random_sample[index]], axis=1)
                 label_batch = y_train[random_sample[index], np.newaxis]
 
                 # sample some labels from p_c
-                sampled_labels = np.random.randint(0, 2, batch_size)
+                sampled_labels = tf.random.uniform((batch_size,), minval=0, maxval=2, dtype=tf.int32)
+                #sampled_labels = np.random.randint(0, 2, batch_size)
 
                 # generate a batch of fake patients, using the generated labels as a
                 # conditioner. We reshape the sampled labels to be
                 # (batch_size, 1) so that we can feed them into the embedding
                 # layer as a length one sequence
                 
-                print(type(noise), noise.shape)
-                print(type(sampled_labels), sampled_labels.shape)
-                
-                generated_images = generator.predict([noise, sampled_labels.reshape((-1, 1))], verbose=0)
+                @tf.function
+                def generate_images(generator, noise, sampled_labels):
+                    # Ensure inputs are TensorFlow tensors
+                    noise = tf.convert_to_tensor(noise, dtype=tf.float32)
+                    sampled_labels = tf.convert_to_tensor(sampled_labels, dtype=tf.int32)
+                    
+                    # Reshape labels and pass them to the generator
+                    reshaped_labels = tf.reshape(sampled_labels, (-1, 1))
+                    return generator([noise, reshaped_labels], training=False)
 
-                X = np.concatenate((image_batch, generated_images))
+                # Convert inputs to TensorFlow tensors before calling the function
+                noise = tf.convert_to_tensor(noise, dtype=tf.float32)
+                sampled_labels = tf.convert_to_tensor(sampled_labels, dtype=tf.int32)
+                generated_images = generate_images(generator, noise, sampled_labels)
+                #generated_images = generator.predict([noise, sampled_labels.reshape((-1, 1))], verbose=0)
+
+                image_batch_tensor = tf.convert_to_tensor(image_batch, dtype=tf.float32)
+                X = tf.concat([image_batch_tensor, generated_images], axis=0)
+
+                #X = np.concatenate((image_batch, generated_images))
                 y = np.array([1] * batch_size + [0] * batch_size)
                 aux_y = np.concatenate((label_batch, sampled_labels), axis=0)
 
