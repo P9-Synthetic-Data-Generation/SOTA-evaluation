@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import os
 import argparse
 import numpy as np
 import pandas as pd
@@ -52,10 +53,16 @@ def pategan_main(args):
     if args.dataset == "random":
         train_data, test_data = data_generator(args.data_no, args.data_dim, args.noise_rate)
         data_dim = args.data_dim
-    elif args.dataset == "credit":
+    elif args.dataset == "mimic":
         # Insert relevant dataset here, and scale between 0 and 1.
-        data = pd.read_csv("creditcard.csv").to_numpy()
-        data = MinMaxScaler().fit_transform(data)
+        data = np.load(os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "data.pkl"), allow_pickle=True)
+
+        # Normalization
+        data_reshaped = data.reshape(-1, data.shape[-1])
+        scaler = MinMaxScaler()
+        data_scaled = scaler.fit_transform(data_reshaped)
+        data = data_scaled.reshape(data.shape)
+
         train_ratio = 0.5
         train = np.random.rand(data.shape[0]) < train_ratio
         train_data, test_data = data[train], data[~train]
