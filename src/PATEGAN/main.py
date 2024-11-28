@@ -147,7 +147,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--batch_size", help="the number of batch size for training student and generator", default=64, type=int
     )
-    parser.add_argument("--k", help="the number of teachers", default=10, type=float)
+    parser.add_argument("--k", help="the number of teachers", default=10, type=int)
     parser.add_argument("--epsilon", help="Differential privacy parameters (epsilon)", default=1.0, type=float)
     parser.add_argument("--delta", help="Differential privacy parameters (delta)", default=0.00001, type=float)
     parser.add_argument("--lamda", help="PATE noise size", default=1.0, type=float)

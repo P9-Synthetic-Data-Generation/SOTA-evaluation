@@ -242,8 +242,6 @@ def pategan(x_train, parameters):
                         2 * lamda * (l + 1)
                     )
 
-                    # print(f"temp2: {temp2}, shape: {np.shape(temp2)} lenght: {len(temp2)}")
-                    # print(f"temp1: {temp1}, shape: {np.shape(temp1)}")
                     alpha[l] = alpha[l] + np.min([temp1, np.log(temp2[0])])
 
             # PATE labels for G_mb
