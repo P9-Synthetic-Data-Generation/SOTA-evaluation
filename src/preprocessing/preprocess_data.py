@@ -211,11 +211,7 @@ def combine_5_measurements(input_dirs: list[str]):
             if "HADM_ID" in df.columns:
                 df = df.drop(columns=["HADM_ID"])
 
-            chunks = [
-                df["VALUE"].iloc[i : i + 5].to_list()
-                for i in range(0, len(df["VALUE"]), 5)
-                if len(df["VALUE"].iloc[i : i + 5]) == 5
-            ]
+            chunks = [df["VALUE"].iloc[i : i + 5].to_list() for i in range(0, len(df["VALUE"]), 5) if len(df["VALUE"].iloc[i : i + 5]) == 5]
             dir_data.append(chunks)
 
         dir_data = np.array(dir_data).transpose(1, 0, 2)
@@ -248,10 +244,6 @@ if __name__ == "__main__":
         item_id_dict=ITEM_ID_DICT,
         output_dir=OUTPUT_DIRS[1],
     )
-    filter_hf_patients(
-        input_csv_path=PATIENTS_CSV_PATH, output_csv_path=OUTPUT_CSV_PATH, target_icd9_codes=TARGET_ICD9_CODES
-    )
-    filter_5_measurements(
-        file_paths=VITALS_FILE_PATHS, input_csv_path=PATIENTS_PREPROCESSED_CSV_PATH, output_dirs=OUTPUT_DIRS[2:5]
-    )
+    filter_hf_patients(input_csv_path=PATIENTS_CSV_PATH, output_csv_path=OUTPUT_CSV_PATH, target_icd9_codes=TARGET_ICD9_CODES)
+    filter_5_measurements(file_paths=VITALS_FILE_PATHS, input_csv_path=PATIENTS_PREPROCESSED_CSV_PATH, output_dirs=OUTPUT_DIRS[2:5])
     combine_5_measurements(input_dirs=PICKLE_INPUT_DIRS)
