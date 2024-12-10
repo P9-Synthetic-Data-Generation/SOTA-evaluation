@@ -5,6 +5,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import numpy as np
 import pandas as pd
 from config import *
+from sklearn.model_selection import train_test_split
 
 
 def make_data_dirs(output_dirs: list[str]):
@@ -197,7 +198,7 @@ def filter_5_measurements(file_paths: str, input_csv_path: str, output_dirs: str
         print(f"{name} finished")
 
 
-def combine_5_measurements(input_dirs: list[str]):
+def combine_5_measurements(input_dirs: list[str], train_test_split_ratio: float):
     """
     Processes multiple directories containing 5-measurement CSV files, combines the data into a 3D array,
     assigns binary labels based on directory names, and saves the resulting data and labels as pickle files.
@@ -261,27 +262,39 @@ def combine_5_measurements(input_dirs: list[str]):
     save_dir = os.path.join("data", "mimic-iii_preprocessed", "pickle_data")
     os.makedirs(save_dir, exist_ok=True)
 
-    with open(os.path.join(save_dir, "data.pkl"), "wb") as f:
+    with open(os.path.join(save_dir, "original_data.pkl"), "wb") as f:
         pickle.dump(combined_data, f)
-    with open(os.path.join(save_dir, "labels.pkl"), "wb") as f:
-        pickle.dump(np.array(labels), f)
+
+    train_data, test_data, train_labels, test_labels = train_test_split(
+        combined_data, np.array(labels), train_size=train_test_split_ratio
+    )
+
+    with open(os.path.join(save_dir, "train_data.pkl"), "wb") as f:
+        pickle.dump(train_data, f)
+    with open(os.path.join(save_dir, "train_labels.pkl"), "wb") as f:
+        pickle.dump(train_labels, f)
+
+    with open(os.path.join(save_dir, "test_data.pkl"), "wb") as f:
+        pickle.dump(test_data, f)
+    with open(os.path.join(save_dir, "test_labels.pkl"), "wb") as f:
+        pickle.dump(test_labels, f)
 
     print(f"Data and labels saved in '{save_dir}'")
 
 
 if __name__ == "__main__":
-    make_data_dirs(output_dirs=OUTPUT_DIRS)
-    filter_hf_data(
-        input_csv_path=VITALS_CSV_PATH,
-        num_threads=NUM_THREADS,
-        chunk_size=CHUNK_SIZE,
-        item_id_dict=ITEM_ID_DICT,
-        output_dir=OUTPUT_DIRS[1],
-    )
-    filter_hf_patients(
-        input_csv_path=PATIENTS_CSV_PATH, output_csv_path=OUTPUT_CSV_PATH, target_icd9_codes=TARGET_ICD9_CODES
-    )
-    filter_5_measurements(
-        file_paths=VITALS_FILE_PATHS, input_csv_path=PATIENTS_PREPROCESSED_CSV_PATH, output_dirs=OUTPUT_DIRS[2:5]
-    )
-    combine_5_measurements(input_dirs=PICKLE_INPUT_DIRS)
+    # make_data_dirs(output_dirs=OUTPUT_DIRS)
+    # filter_hf_data(
+    #     input_csv_path=VITALS_CSV_PATH,
+    #     num_threads=NUM_THREADS,
+    #     chunk_size=CHUNK_SIZE,
+    #     item_id_dict=ITEM_ID_DICT,
+    #     output_dir=OUTPUT_DIRS[1],
+    # )
+    # filter_hf_patients(
+    #     input_csv_path=PATIENTS_CSV_PATH, output_csv_path=OUTPUT_CSV_PATH, target_icd9_codes=TARGET_ICD9_CODES
+    # )
+    # filter_5_measurements(
+    #     file_paths=VITALS_FILE_PATHS, input_csv_path=PATIENTS_PREPROCESSED_CSV_PATH, output_dirs=OUTPUT_DIRS[2:5]
+    # )
+    combine_5_measurements(input_dirs=PICKLE_INPUT_DIRS, train_test_split_ratio=0.9)

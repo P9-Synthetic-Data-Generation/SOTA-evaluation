@@ -79,8 +79,8 @@ if __name__ == "__main__":
     dp_noise = 0.5
 
     features, labels = data_loader(
-        os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "data.pkl"),
-        os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "labels.pkl"),
+        os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "train_data.pkl"),
+        os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "train_labels.pkl"),
     )
 
     generator = build_generator(noise_dim)

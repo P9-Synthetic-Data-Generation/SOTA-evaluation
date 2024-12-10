@@ -84,25 +84,21 @@ def plot_feature_distributions(
 
 
 if __name__ == "__main__":
-    data, _ = data_loader(os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "data.pkl"))
+    data, _ = data_loader(os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "original_data.pkl"))
 
-    synthetic_data, _ = data_loader(os.path.join("data", "synthetic_data", "synthcity_pategan.csv"))
-    synthetic_data = synthetic_data[:, :-1]
-
-    shit, _ = data_loader(os.path.join("data", "synthetic_data", "pategan_test_500_rows.csv"))
-    shit = shit[:, :-1] * 100
+    pategan_data, _ = data_loader(os.path.join("data", "synthetic_data", "synthcity_pategan.csv"))
+    pategan_data = pategan_data[:, :-1]
 
     original_distributions = calculate_feature_distribution(data)
-    synthetic_distributions = calculate_feature_distribution(synthetic_data)
-    synthetic_distributions2 = calculate_feature_distribution(shit)
+    synthetic_distributions = calculate_feature_distribution(pategan_data)
 
     plot_feature_distributions(
-        [original_distributions, synthetic_distributions, synthetic_distributions2],
-        labels=["Original Data", "Synthetic Data", "Hej"],
+        [original_distributions, synthetic_distributions],
+        labels=["Original Data", "PATEGAN"],
         num_features=9,
         save=True,
         save_name="distribution_plot.png",
     )
 
     display_statistics_table(data, title="Original Data")
-    display_statistics_table(synthetic_data, title="Synthetic Data")
+    display_statistics_table(pategan_data, title="PATEGAN")
