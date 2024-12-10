@@ -1,3 +1,7 @@
+'''
+Install Synthcity before running code: 'pip install synthcity'
+'''
+
 import numpy as np
 import pandas as pd
 import os
@@ -5,8 +9,6 @@ from synthcity.plugins import Plugins
 
 
 def load_mimic_data():
-    #data = np.load(r"C:\Users\mikke\Documents\GitHub\SOTA-evaluation\data\mimic-iii_preprocessed\pickle_data\data.pkl", allow_pickle=True)
-    #labels = np.load(r"C:\Users\mikke\Documents\GitHub\SOTA-evaluation\data\mimic-iii_preprocessed\pickle_data\labels.pkl", allow_pickle=True)
     data = np.load(os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "data.pkl"), allow_pickle=True)
     labels = np.load(os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "labels.pkl"), allow_pickle=True)
 
