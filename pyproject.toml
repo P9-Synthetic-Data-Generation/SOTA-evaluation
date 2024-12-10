@@ -1,0 +1,11 @@
+[tool.ruff]
+exclude = ["data", ".git"]
+select = ["E", "W", "F", "I"]
+fixable = ["ALL"]
+line-length = 120
+indent-width = 4
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
