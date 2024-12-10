@@ -2,3 +2,5 @@ tensorflow
 pandas
 numpy
 matplotlib
+seaborn
+tabulate
