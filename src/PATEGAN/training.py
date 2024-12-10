@@ -7,7 +7,7 @@ import tensorflow as tf
 from architecture import build_generator, build_student_discriminator, build_teacher_discriminators
 
 sys.path.append("src")
-from utils.load_data import data_loader
+from utils.data_handling import data_loader, save_synthetic_data
 
 
 def pate_aggregate(teacher_votes, dp_noise):
@@ -69,7 +69,7 @@ def training(
         optimizer_gen.apply_gradients(zip(gradients, generator.trainable_variables))
 
         # Logging progress
-        if epoch % 100 == 0:
+        if epoch % 5 == 0:
             print(f"Epoch {epoch}/{epochs} | Gen Loss: {gen_loss:.4f}")
 
 
@@ -100,9 +100,6 @@ if __name__ == "__main__":
     )
 
     # Generate synthetic labeled data
-    noise = np.random.normal(0, 1, (10, noise_dim))
+    noise = np.random.normal(0, 1, (500, noise_dim))
     synthetic_data = generator.predict(noise)
-    np.savetxt(
-        "synthetic_data.csv", synthetic_data, delimiter=",", header="Feature1,Feature2,Feature3,...,Label", comments=""
-    )
-    print("Synthetic data (features + labels):\n", synthetic_data)
+    save_synthetic_data(synthetic_data, "pategan_test_500_rows.csv")
