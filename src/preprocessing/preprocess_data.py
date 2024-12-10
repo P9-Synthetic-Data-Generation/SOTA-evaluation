@@ -1,6 +1,7 @@
 import os
 import pickle
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
 import numpy as np
 import pandas as pd
 from config import *
@@ -170,6 +171,32 @@ def filter_5_measurements(file_paths: str, input_csv_path: str, output_dirs: str
         print(f"{name} finished")
 
 
+def clean_data(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Cleans the data by:
+    - Ensuring the 'VALUE' column is numeric.
+    - Replacing out-of-threshold 'VALUE' entries with the mean of the eligible rows.
+    - Replacing NaN values with the mean of the eligible rows.
+    - Values outside the range of -500 to 500 are replaced by the mean of the valid entries.
+
+    Args:
+        df (pd.DataFrame): Dataframe containing the heart failure data.
+
+    Returns:
+        pd.DataFrame: Cleaned dataframe with NaN and out-of-threshold values replaced by the mean.
+    """
+    df["VALUE"] = pd.to_numeric(df["VALUE"], errors="coerce")
+
+    valid_values = df["VALUE"][(df["VALUE"] >= -500) & (df["VALUE"] <= 500)]
+    mean_valid_value = valid_values.mean()
+
+    df["VALUE"] = df["VALUE"].apply(lambda x: mean_valid_value if (pd.isna(x) or x < -500 or x > 500) else x)
+
+    print(f"Data cleaned. Remaining rows: {len(df)}")
+
+    return df
+
+
 def combine_5_measurements(input_dirs: list[str]):
     """
     Processes multiple directories containing 5-measurement CSV files, combines the data into a 3D array,
@@ -208,10 +235,16 @@ def combine_5_measurements(input_dirs: list[str]):
             if "VALUE" not in df.columns:
                 raise ValueError(f"'VALUE' column not found in file: {filepath}")
 
+            df = clean_data(df)
+
             if "HADM_ID" in df.columns:
                 df = df.drop(columns=["HADM_ID"])
 
-            chunks = [df["VALUE"].iloc[i : i + 5].to_list() for i in range(0, len(df["VALUE"]), 5) if len(df["VALUE"].iloc[i : i + 5]) == 5]
+            chunks = [
+                df["VALUE"].iloc[i : i + 5].to_list()
+                for i in range(0, len(df["VALUE"]), 5)
+                if len(df["VALUE"].iloc[i : i + 5]) == 5
+            ]
             dir_data.append(chunks)
 
         dir_data = np.array(dir_data).transpose(1, 0, 2)
@@ -244,6 +277,10 @@ if __name__ == "__main__":
         item_id_dict=ITEM_ID_DICT,
         output_dir=OUTPUT_DIRS[1],
     )
-    filter_hf_patients(input_csv_path=PATIENTS_CSV_PATH, output_csv_path=OUTPUT_CSV_PATH, target_icd9_codes=TARGET_ICD9_CODES)
-    filter_5_measurements(file_paths=VITALS_FILE_PATHS, input_csv_path=PATIENTS_PREPROCESSED_CSV_PATH, output_dirs=OUTPUT_DIRS[2:5])
+    filter_hf_patients(
+        input_csv_path=PATIENTS_CSV_PATH, output_csv_path=OUTPUT_CSV_PATH, target_icd9_codes=TARGET_ICD9_CODES
+    )
+    filter_5_measurements(
+        file_paths=VITALS_FILE_PATHS, input_csv_path=PATIENTS_PREPROCESSED_CSV_PATH, output_dirs=OUTPUT_DIRS[2:5]
+    )
     combine_5_measurements(input_dirs=PICKLE_INPUT_DIRS)
