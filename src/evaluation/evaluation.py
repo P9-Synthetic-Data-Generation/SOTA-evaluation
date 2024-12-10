@@ -9,7 +9,6 @@ from utils.load_data import data_loader
 
 
 def feature_distribution(data):
-    # Lists to store calculated statistics
     means = []
     medians = []
     std_devs = []
@@ -19,16 +18,16 @@ def feature_distribution(data):
     percentiles_50 = []
     percentiles_75 = []
 
+    print("Data shape:", data.shape)
+
     for i in range(9):
         feature_data = data[:, i * 5 : (i + 1) * 5].flatten()
-
-        print("Data shape:", feature_data.shape)
 
         means.append(np.mean(feature_data))
         medians.append(np.median(feature_data))
         std_devs.append(np.std(feature_data))
-        mins.append(np.min(feature_data))
-        max_values.append(np.max(feature_data))
+        mins.append((np.min(feature_data), np.argmin(feature_data)))
+        max_values.append((np.max(feature_data), np.argmax(feature_data)))
 
         percentiles_25.append(np.percentile(feature_data, 25))
         percentiles_50.append(np.percentile(feature_data, 50))

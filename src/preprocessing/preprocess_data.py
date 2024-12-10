@@ -88,6 +88,30 @@ def filter_hf_patients(input_csv_path: str, output_csv_path: str, target_icd9_co
     print(f"Finished filtering patients data to {output_csv_path}")
 
 
+def clean_data(df: pd.DataFrame, name: str) -> pd.DataFrame:
+    """
+    Cleans the data by:
+    - Ensuring the 'VALUE' column is numeric.
+    - Removing NaN values and values outside the range of -500 to 500.
+
+    Args:
+        df (pd.DataFrame): Dataframe containing the heart failure data.
+
+    Returns:
+        pd.DataFrame: Cleaned dataframe with NaN and out-of-threshold values removed.
+    """
+    len_before = df["VALUE"].shape[0]
+
+    df["VALUE"] = pd.to_numeric(df["VALUE"], errors="coerce")
+    df = df[~df["VALUE"].apply(lambda x: pd.isna(x) or x <= 0 or x > 500)]
+
+    len_after = df["VALUE"].shape[0]
+
+    print(f"Cleaning data from {name}. {len_before - len_after} Rows removed.")
+
+    return df
+
+
 def filter_5_measurements(file_paths: str, input_csv_path: str, output_dirs: str):
     """
     Filters heart failure data to keep only the first five measurements for HADM_IDs that are common across all vitals.
@@ -102,6 +126,8 @@ def filter_5_measurements(file_paths: str, input_csv_path: str, output_dirs: str
 
     for name, path in file_paths.items():
         df = pd.read_csv(path)
+
+        df = clean_data(df, name)
 
         hadm_counts = df["HADM_ID"].value_counts()
         valid_hadm_ids = hadm_counts[hadm_counts >= 5].index
@@ -171,32 +197,6 @@ def filter_5_measurements(file_paths: str, input_csv_path: str, output_dirs: str
         print(f"{name} finished")
 
 
-def clean_data(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Cleans the data by:
-    - Ensuring the 'VALUE' column is numeric.
-    - Replacing out-of-threshold 'VALUE' entries with the mean of the eligible rows.
-    - Replacing NaN values with the mean of the eligible rows.
-    - Values outside the range of -500 to 500 are replaced by the mean of the valid entries.
-
-    Args:
-        df (pd.DataFrame): Dataframe containing the heart failure data.
-
-    Returns:
-        pd.DataFrame: Cleaned dataframe with NaN and out-of-threshold values replaced by the mean.
-    """
-    df["VALUE"] = pd.to_numeric(df["VALUE"], errors="coerce")
-
-    valid_values = df["VALUE"][(df["VALUE"] >= -500) & (df["VALUE"] <= 500)]
-    mean_valid_value = valid_values.mean()
-
-    df["VALUE"] = df["VALUE"].apply(lambda x: mean_valid_value if (pd.isna(x) or x < -500 or x > 500) else x)
-
-    print(f"Data cleaned. Remaining rows: {len(df)}")
-
-    return df
-
-
 def combine_5_measurements(input_dirs: list[str]):
     """
     Processes multiple directories containing 5-measurement CSV files, combines the data into a 3D array,
@@ -235,8 +235,6 @@ def combine_5_measurements(input_dirs: list[str]):
             if "VALUE" not in df.columns:
                 raise ValueError(f"'VALUE' column not found in file: {filepath}")
 
-            df = clean_data(df)
-
             if "HADM_ID" in df.columns:
                 df = df.drop(columns=["HADM_ID"])
 
@@ -248,7 +246,10 @@ def combine_5_measurements(input_dirs: list[str]):
             dir_data.append(chunks)
 
         dir_data = np.array(dir_data).transpose(1, 0, 2)
-        data_list.append(dir_data)
+
+        reshaped_dir_data = dir_data.reshape(dir_data.shape[0], -1)
+
+        data_list.append(reshaped_dir_data)
 
         if os.path.basename(dir) == "vitals_5_measurements_hf":
             labels += [1] * dir_data.shape[0]
