@@ -7,6 +7,17 @@ import pandas as pd
 from config import *
 from sklearn.model_selection import train_test_split
 
+def balance_dataset_by_duplication(data, labels):
+    labels = np.array(labels)
+    positive_indices = np.where(labels == 1)[0]
+
+    positive_data = data[positive_indices]
+    positive_labels = labels[positive_indices]
+
+    data_balanced = np.vstack((data, positive_data))
+    labels_balanced = np.concatenate((labels, positive_labels))
+    
+    return data_balanced, labels_balanced
 
 def make_data_dirs(output_dirs: list[str]):
     """
@@ -198,7 +209,7 @@ def filter_5_measurements(file_paths: str, input_csv_path: str, output_dirs: str
         print(f"{name} finished")
 
 
-def combine_5_measurements(input_dirs: list[str], train_test_split_ratio: float):
+def combine_5_measurements(input_dirs: list[str], train_test_split_ratio: float, duplicate_minority_class: bool):
     """
     Processes multiple directories containing 5-measurement CSV files, combines the data into a 3D array,
     assigns binary labels based on directory names, and saves the resulting data and labels as pickle files.
@@ -269,6 +280,10 @@ def combine_5_measurements(input_dirs: list[str], train_test_split_ratio: float)
         combined_data, np.array(labels), train_size=train_test_split_ratio
     )
 
+    # duplicates training data and labels
+    if duplicate_minority_class == True:
+        train_data, train_labels = balance_dataset_by_duplication(train_data, train_labels)
+
     with open(os.path.join(save_dir, "train_data.pkl"), "wb") as f:
         pickle.dump(train_data, f)
     with open(os.path.join(save_dir, "train_labels.pkl"), "wb") as f:
@@ -297,4 +312,4 @@ if __name__ == "__main__":
     # filter_5_measurements(
     #     file_paths=VITALS_FILE_PATHS, input_csv_path=PATIENTS_PREPROCESSED_CSV_PATH, output_dirs=OUTPUT_DIRS[2:5]
     # )
-    combine_5_measurements(input_dirs=PICKLE_INPUT_DIRS, train_test_split_ratio=0.9)
+    combine_5_measurements(input_dirs=PICKLE_INPUT_DIRS, train_test_split_ratio=0.9, duplicate_minority_class=True)
