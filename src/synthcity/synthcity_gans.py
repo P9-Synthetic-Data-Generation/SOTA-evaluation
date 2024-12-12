@@ -9,7 +9,7 @@ from synthcity.plugins import Plugins
 
 
 def load_mimic_data():
-    data = np.load(os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "data.pkl"), allow_pickle=True)
+    data = np.load(os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "original_data.pkl"), allow_pickle=True)
     labels = np.load(os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "labels.pkl"), allow_pickle=True)
 
     data_reshaped = data.reshape(len(data), -1)
@@ -23,10 +23,12 @@ if __name__ == "__main__":
     data = load_mimic_data()
     print("data shape: ", data.shape)
 
-    models = ["pategan", "dpgan"]
+    models = ["pategan"]
     for model in models:
         syn_model = Plugins().get(model)
         syn_model.fit(data)
+
+        syn_model.save()
 
         print(model, ": ")
         print(syn_model.generate(count = 10))

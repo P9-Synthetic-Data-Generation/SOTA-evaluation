@@ -7,6 +7,7 @@ import pandas as pd
 from config import *
 from sklearn.model_selection import train_test_split
 
+
 def balance_dataset_by_duplication(data, labels):
     labels = np.array(labels)
     positive_indices = np.where(labels == 1)[0]
@@ -16,8 +17,9 @@ def balance_dataset_by_duplication(data, labels):
 
     data_balanced = np.vstack((data, positive_data))
     labels_balanced = np.concatenate((labels, positive_labels))
-    
+
     return data_balanced, labels_balanced
+
 
 def make_data_dirs(output_dirs: list[str]):
     """
@@ -275,6 +277,8 @@ def combine_5_measurements(input_dirs: list[str], train_test_split_ratio: float,
 
     with open(os.path.join(save_dir, "original_data.pkl"), "wb") as f:
         pickle.dump(combined_data, f)
+    with open(os.path.join(save_dir, "original_labels.pkl"), "wb") as f:
+        pickle.dump(np.array(labels), f)
 
     train_data, test_data, train_labels, test_labels = train_test_split(
         combined_data, np.array(labels), train_size=train_test_split_ratio
