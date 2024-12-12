@@ -284,7 +284,6 @@ def combine_5_measurements(input_dirs: list[str], train_test_split_ratio: float,
         combined_data, np.array(labels), train_size=train_test_split_ratio
     )
 
-    # duplicates training data and labels
     if duplicate_minority_class:
         train_data, train_labels = balance_dataset_by_duplication(train_data, train_labels)
 
@@ -302,18 +301,18 @@ def combine_5_measurements(input_dirs: list[str], train_test_split_ratio: float,
 
 
 if __name__ == "__main__":
-    # make_data_dirs(output_dirs=OUTPUT_DIRS)
-    # filter_hf_data(
-    #     input_csv_path=VITALS_CSV_PATH,
-    #     num_threads=NUM_THREADS,
-    #     chunk_size=CHUNK_SIZE,
-    #     item_id_dict=ITEM_ID_DICT,
-    #     output_dir=OUTPUT_DIRS[1],
-    # )
-    # filter_hf_patients(
-    #     input_csv_path=PATIENTS_CSV_PATH, output_csv_path=OUTPUT_CSV_PATH, target_icd9_codes=TARGET_ICD9_CODES
-    # )
-    # filter_5_measurements(
-    #     file_paths=VITALS_FILE_PATHS, input_csv_path=PATIENTS_PREPROCESSED_CSV_PATH, output_dirs=OUTPUT_DIRS[2:5]
-    # )
-    combine_5_measurements(input_dirs=PICKLE_INPUT_DIRS, train_test_split_ratio=0.9, duplicate_minority_class=True)
+    make_data_dirs(output_dirs=OUTPUT_DIRS)
+    filter_hf_data(
+        input_csv_path=VITALS_CSV_PATH,
+        num_threads=NUM_THREADS,
+        chunk_size=CHUNK_SIZE,
+        item_id_dict=ITEM_ID_DICT,
+        output_dir=OUTPUT_DIRS[1],
+    )
+    filter_hf_patients(
+        input_csv_path=PATIENTS_CSV_PATH, output_csv_path=OUTPUT_CSV_PATH, target_icd9_codes=TARGET_ICD9_CODES
+    )
+    filter_5_measurements(
+        file_paths=VITALS_FILE_PATHS, input_csv_path=PATIENTS_PREPROCESSED_CSV_PATH, output_dirs=OUTPUT_DIRS[2:5]
+    )
+    combine_5_measurements(input_dirs=PICKLE_INPUT_DIRS, train_test_split_ratio=0.9, duplicate_minority_class=False)
