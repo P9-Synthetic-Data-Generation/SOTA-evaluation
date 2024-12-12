@@ -4,3 +4,5 @@ numpy
 matplotlib
 seaborn
 tabulate
+synthcity
+smartnoise-synth
