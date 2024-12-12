@@ -285,7 +285,7 @@ def combine_5_measurements(input_dirs: list[str], train_test_split_ratio: float,
     )
 
     # duplicates training data and labels
-    if duplicate_minority_class == True:
+    if duplicate_minority_class:
         train_data, train_labels = balance_dataset_by_duplication(train_data, train_labels)
 
     with open(os.path.join(save_dir, "train_data.pkl"), "wb") as f:
