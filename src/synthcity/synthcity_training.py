@@ -38,10 +38,12 @@ if __name__ == "__main__":
     data_with_labels = np.concatenate((data, labels), axis=1)
     df_data = pd.DataFrame(data_with_labels)
 
-    models = ["dpgan"]
+    models = ["pategan"]
     for model in models:
-        syn_model = Plugins().get(model)
+        syn_model = Plugins().get(
+            model,
+            epsilon=10.0,
+        )
         syn_model.fit(df_data)
 
         save_to_file(os.path.join("data", f"synth_{model}.pkl"), syn_model)
-
