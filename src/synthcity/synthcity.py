@@ -1,7 +1,3 @@
-"""
-Install Synthcity before running code: 'pip install synthcity'
-"""
-
 import os
 import sys
 

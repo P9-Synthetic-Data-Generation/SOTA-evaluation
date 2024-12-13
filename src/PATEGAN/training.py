@@ -100,6 +100,6 @@ if __name__ == "__main__":
     )
 
     # Generate synthetic labeled data
-    noise = np.random.normal(0, 1, (500, noise_dim))
+    noise = np.random.normal(0, 1, (8228, noise_dim))
     synthetic_data = generator.predict(noise)
     save_synthetic_data(synthetic_data, "pategan_test_500_rows.csv")

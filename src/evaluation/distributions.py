@@ -47,6 +47,7 @@ def display_statistics_table(data, title):
 
 def calculate_feature_distribution(data):
     print("Data shape:", data.shape)
+
     feature_distributions = []
 
     for i in range(9):
@@ -86,19 +87,32 @@ def plot_feature_distributions(
 if __name__ == "__main__":
     data, _ = data_loader(os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "original_data.pkl"))
 
-    pategan_data, _ = data_loader(os.path.join("data", "synthetic_data", "synthcity_pategan.csv"))
-    pategan_data = pategan_data[:, :-1]
+    dpctgan_data, _ = data_loader(os.path.join("data", "synthetic_data", "smartnoise_dpctgan_1eps.csv"))
+    print("Amount of true labels:", sum(dpctgan_data[:, -1]))
+    dpctgan_data = dpctgan_data[:, :-1]
+
+    patectgan_data, _ = data_loader(os.path.join("data", "synthetic_data", "smartnoise_patectgan_1eps.csv"))
+    print("Amount of true labels:", sum(patectgan_data[:, -1]))
+    patectgan_data = patectgan_data[:, :-1]
+
+    patectgan3_data, _ = data_loader(os.path.join("data", "synthetic_data", "smartnoise_patectgan_3eps.csv"))
+    print("Amount of true labels:", sum(patectgan3_data[:, -1]))
+    patectgan3_data = patectgan3_data[:, :-1]
 
     original_distributions = calculate_feature_distribution(data)
-    synthetic_distributions = calculate_feature_distribution(pategan_data)
+    dpctgan_distributions = calculate_feature_distribution(dpctgan_data)
+    patectgan_distributions = calculate_feature_distribution(patectgan_data)
+    patectgan3_distributions = calculate_feature_distribution(patectgan3_data)
 
     plot_feature_distributions(
-        [original_distributions, synthetic_distributions],
-        labels=["Original Data", "PATEGAN"],
+        [original_distributions, dpctgan_distributions, patectgan_distributions, patectgan3_distributions],
+        labels=["Original Data", "DPCTGAN", "PATECTGAN 1", "PATECTGAN 3"],
         num_features=9,
         save=True,
         save_name="distribution_plot.png",
     )
 
     display_statistics_table(data, title="Original Data")
-    display_statistics_table(pategan_data, title="PATEGAN")
+    display_statistics_table(dpctgan_data, title="DPCTGAN")
+    display_statistics_table(patectgan_data, title="PATECTGAN 1")
+    display_statistics_table(patectgan3_data, title="PATECTGAN 3")
