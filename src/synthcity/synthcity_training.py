@@ -31,19 +31,23 @@ def load_mimic_data():
 
 if __name__ == "__main__":
     data, labels = data_loader(
-        os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "train_data.pkl"),
-        os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "train_labels.pkl"),
+        os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "original_data.pkl"),
+        os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "original_labels.pkl"),
     )
+
+    print(data.shape)
+    print(labels.shape)
 
     data_with_labels = np.concatenate((data, labels), axis=1)
     df_data = pd.DataFrame(data_with_labels)
 
-    models = ["pategan"]
-    for model in models:
+    epsilons = [1, 5, 10]
+    for eps in epsilons:
+        print(f"Started training pategan with eps {eps}.")
         syn_model = Plugins().get(
-            model,
-            epsilon=10.0,
+            "pategan",
+            epsilon=eps,
         )
         syn_model.fit(df_data)
 
-        save_to_file(os.path.join("data", f"synth_{model}.pkl"), syn_model)
+        save_to_file(os.path.join("data", "models", f"synthcity_pategan_eps{eps}.pkl"), syn_model)
