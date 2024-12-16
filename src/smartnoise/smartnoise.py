@@ -18,7 +18,9 @@ def generate_synthetic_data(eps_values, data, models):
             synthesizer.fit(data, preprocessor_eps=10)
 
             synthetic_data = synthesizer.sample(8228)
-            save_path = os.path.join("data", "synthetic_data", f"smartnoise_{name}_{eps}eps.csv")
+
+            os.makedirs("data_synthetic", exist_ok=True)
+            save_path = os.path.join("data_synthetic", f"smartnoise_{name}_{eps}eps.csv")
             synthetic_data.to_csv(save_path, index=False)
 
             print(f"Finished training of {name} with {eps}. Synthetic data saved to {save_path}")

@@ -17,9 +17,7 @@ from utils.data_handling import data_loader
 
 def load_mimic_data():
     data = np.load(os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "train_data.pkl"), allow_pickle=True)
-    labels = np.load(
-        os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "train_labels.pkl"), allow_pickle=True
-    )
+    labels = np.load(os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "train_labels.pkl"), allow_pickle=True)
 
     data_reshaped = data.reshape(len(data), -1)
     labels_reshaped = labels.reshape(-1, 1)
@@ -50,4 +48,5 @@ if __name__ == "__main__":
         )
         syn_model.fit(df_data)
 
-        save_to_file(os.path.join("data", "models", f"synthcity_pategan_eps{eps}.pkl"), syn_model)
+        os.makedirs("models", exist_ok=True)
+        save_to_file(os.path.join("models", f"synthcity_pategan_eps{eps}.pkl"), syn_model)
