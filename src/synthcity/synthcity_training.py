@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from synthcity.plugins import Plugins
-from synthcity.utils.serialization import save_to_file
+from synthcity.utils.serialization import load_from_file, save_to_file
 
 sys.path.append("src")
 from utils.data_handling import data_loader
@@ -17,7 +17,9 @@ from utils.data_handling import data_loader
 
 def load_mimic_data():
     data = np.load(os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "train_data.pkl"), allow_pickle=True)
-    labels = np.load(os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "train_labels.pkl"), allow_pickle=True)
+    labels = np.load(
+        os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "train_labels.pkl"), allow_pickle=True
+    )
 
     data_reshaped = data.reshape(len(data), -1)
     labels_reshaped = labels.reshape(-1, 1)
@@ -50,3 +52,19 @@ if __name__ == "__main__":
 
         os.makedirs("models", exist_ok=True)
         save_to_file(os.path.join("models", f"synthcity_pategan_eps{eps}.pkl"), syn_model)
+
+    # pategan1_model = load_from_file(os.path.join("data", "models", "synthcity_pategan_eps1.pkl"))
+    # pategan5_model = load_from_file(os.path.join("data", "models", "synthcity_pategan_eps5.pkl"))
+    # pategan10_model = load_from_file(os.path.join("data", "models", "synthcity_pategan_eps10.pkl"))
+
+    # pategan1_data = pategan1_model.generate(count=8228)
+    # pategan5_data = pategan1_model.generate(count=8228)
+    # pategan10_data = pategan1_model.generate(count=8228)
+
+    # pategan1_df = pd.DataFrame(pategan1_data.data)
+    # pategan5_df = pd.DataFrame(pategan5_data.data)
+    # pategan10_df = pd.DataFrame(pategan10_data.data)
+
+    # pategan1_df.to_csv(os.path.join("synthetic_data", "synthcity_pategan1_data.csv"), index=False)
+    # pategan5_df.to_csv(os.path.join("synthetic_data", "synthcity_pategan5_data.csv"), index=False)
+    # pategan10_df.to_csv(os.path.join("synthetic_data", "synthcity_pategan10_data.csv"), index=False)
