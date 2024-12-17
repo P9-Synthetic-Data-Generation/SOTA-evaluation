@@ -290,9 +290,9 @@ def combine_5_measurements(input_dirs: list[str], train_test_split_ratio: float,
     if duplicate_minority_class:
         train_data, train_labels = balance_dataset_by_duplication(train_data, train_labels)
 
-    with open(os.path.join(save_dir, "train_data.pkl"), "wb") as f:
+    with open(os.path.join(save_dir, "training_data.pkl"), "wb") as f:
         pickle.dump(train_data, f)
-    with open(os.path.join(save_dir, "train_labels.pkl"), "wb") as f:
+    with open(os.path.join(save_dir, "training_labels.pkl"), "wb") as f:
         pickle.dump(train_labels, f)
 
     with open(os.path.join(save_dir, "test_data.pkl"), "wb") as f:

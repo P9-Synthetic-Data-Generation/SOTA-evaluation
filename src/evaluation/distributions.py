@@ -45,7 +45,7 @@ def display_statistics_table(data, title):
     print(tabulate(rows, headers=headers, tablefmt="grid"))
 
 
-def calculate_feature_distribution(data):
+def calculate_feature_distributions(data):
     print("Data shape:", data.shape)
 
     feature_distributions = []
@@ -85,34 +85,36 @@ def plot_feature_distributions(
 
 
 if __name__ == "__main__":
-    data, _ = data_loader(os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "original_data.pkl"))
+    training_data_features, _ = data_loader(
+        os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "training_data.pkl")
+    )
 
-    dpctgan_data, _ = data_loader(os.path.join("data", "synthetic_data", "smartnoise_dpctgan_1eps.csv"))
-    print("Amount of true labels:", sum(dpctgan_data[:, -1]))
-    dpctgan_data = dpctgan_data[:, :-1]
+    pategan_1eps_data, _ = data_loader(os.path.join("data_synthetic", "synthcity_pategan_1eps.csv"))
+    print("Amount of true labels:", sum(pategan_1eps_data[:, -1]))
+    pategan_1eps_features = pategan_1eps_data[:, :-1]
 
-    patectgan_data, _ = data_loader(os.path.join("data", "synthetic_data", "smartnoise_patectgan_1eps.csv"))
-    print("Amount of true labels:", sum(patectgan_data[:, -1]))
-    patectgan_data = patectgan_data[:, :-1]
+    pategan_5eps_data, _ = data_loader(os.path.join("data_synthetic", "synthcity_pategan_5eps.csv"))
+    print("Amount of true labels:", sum(pategan_5eps_data[:, -1]))
+    pategan_5eps_features = pategan_5eps_data[:, :-1]
 
-    patectgan3_data, _ = data_loader(os.path.join("data", "synthetic_data", "smartnoise_patectgan_3eps.csv"))
-    print("Amount of true labels:", sum(patectgan3_data[:, -1]))
-    patectgan3_data = patectgan3_data[:, :-1]
+    pategan_5eps_data, _ = data_loader(os.path.join("data_synthetic", "synthcity_pategan_10eps.csv"))
+    print("Amount of true labels:", sum(pategan_5eps_data[:, -1]))
+    pategan_10eps_features = pategan_5eps_data[:, :-1]
 
-    original_distributions = calculate_feature_distribution(data)
-    dpctgan_distributions = calculate_feature_distribution(dpctgan_data)
-    patectgan_distributions = calculate_feature_distribution(patectgan_data)
-    patectgan3_distributions = calculate_feature_distribution(patectgan3_data)
+    original_distributions = calculate_feature_distributions(training_data_features)
+    pategan_1eps_distributions = calculate_feature_distributions(pategan_1eps_features)
+    pategan_5eps_distributions = calculate_feature_distributions(pategan_5eps_features)
+    pategan_10eps_distributions = calculate_feature_distributions(pategan_10eps_features)
 
     plot_feature_distributions(
-        [original_distributions, dpctgan_distributions, patectgan_distributions, patectgan3_distributions],
-        labels=["Original Data", "DPCTGAN", "PATECTGAN 1", "PATECTGAN 3"],
+        [original_distributions, pategan_1eps_distributions, pategan_5eps_distributions, pategan_10eps_distributions],
+        labels=["Original Data", "PATEGAN 1 eps", "PATEGAN 5 eps", "PATEGAN 10 eps"],
         num_features=9,
         save=True,
         save_name="distribution_plot.png",
     )
 
-    display_statistics_table(data, title="Original Data")
-    display_statistics_table(dpctgan_data, title="DPCTGAN")
-    display_statistics_table(patectgan_data, title="PATECTGAN 1")
-    display_statistics_table(patectgan3_data, title="PATECTGAN 3")
+    display_statistics_table(training_data_features, title="Training Data")
+    display_statistics_table(pategan_1eps_features, title="PATEGAN 1 eps")
+    display_statistics_table(pategan_5eps_features, title="PATEGAN 5 eps")
+    display_statistics_table(pategan_10eps_features, title="PATEGAN 10 eps")

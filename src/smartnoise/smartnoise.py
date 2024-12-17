@@ -28,14 +28,14 @@ def generate_synthetic_data(eps_values, data, models):
 
 if __name__ == "__main__":
     features, labels = data_loader(
-        os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "original_data.pkl"),
-        os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "original_labels.pkl"),
+        os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "training_data.pkl"),
+        os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "training_labels.pkl"),
     )
-    data = pd.DataFrame(np.hstack((features, labels)))
+    training_data = pd.DataFrame(np.hstack((features, labels)))
 
     generate_synthetic_data(
         eps_values=[1, 5, 10],
-        data=data,
+        data=training_data,
         models=[
             "dpctgan",
             "patectgan",

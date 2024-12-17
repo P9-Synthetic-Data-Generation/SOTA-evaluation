@@ -59,10 +59,12 @@ def display_metrics(metrics):
 
 
 if __name__ == "__main__":
-    data, _ = data_loader(os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "original_data.pkl"))
+    training_data_features, _ = data_loader(
+        os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "training_data.pkl")
+    )
 
-    pategan_data, _ = data_loader(os.path.join("data", "synthetic_data", "synthcity_pategan.csv"))
-    pategan_data = pategan_data[:, :-1]
+    pategan_data, _ = data_loader(os.path.join("data_synthetic", "synthcity_pategan_1eps.csv"))
+    pategan_data_features = pategan_data[:, :-1]
 
-    metrics = evaluate_synthetic_data(data, pategan_data)
+    metrics = evaluate_synthetic_data(training_data_features, pategan_data_features)
     display_metrics(metrics)
