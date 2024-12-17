@@ -283,6 +283,9 @@ def combine_5_measurements(input_dirs: list[str], train_test_split_ratio: float,
     train_data, test_data, train_labels, test_labels = train_test_split(
         combined_data, np.array(labels), train_size=train_test_split_ratio
     )
+    print(f"Data divided and saved with train/test split ratio: {train_test_split_ratio}")
+    print(f"Training - size: {len(train_data)}, true labels: {sum(train_labels)}")
+    print(f"    Test - size: {len(test_data)}, true labels: {sum(test_labels)}")
 
     if duplicate_minority_class:
         train_data, train_labels = balance_dataset_by_duplication(train_data, train_labels)
