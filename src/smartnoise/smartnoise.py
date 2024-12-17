@@ -10,14 +10,14 @@ from utils.data_handling import data_loader
 
 
 def generate_synthetic_data(eps_values, data, models):
-    for eps in eps_values:
-        for name in models:
+    for name in models:
+        for eps in eps_values:
             synthesizer = Synthesizer.create(name, epsilon=10 + eps)
 
             print(f"Training {name} with {eps}...")
             synthesizer.fit(data, preprocessor_eps=10)
 
-            synthetic_data = synthesizer.sample(8228)
+            synthetic_data = synthesizer.sample(len(data))
 
             os.makedirs("data_synthetic", exist_ok=True)
             save_path = os.path.join("data_synthetic", f"smartnoise_{name}_{eps}eps.csv")
@@ -37,7 +37,7 @@ if __name__ == "__main__":
         eps_values=[1, 5, 10],
         data=training_data,
         models=[
-            "dpctgan",
             "patectgan",
+            "dpctgan",
         ],
     )
