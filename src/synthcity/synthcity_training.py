@@ -21,10 +21,13 @@ def train(eps_values, data, models):
             )
             model.fit(data)
 
-            os.makedirs("models", exist_ok=True)
-            save_path = os.path.join("models", f"synthcity_{name}_{eps}eps.pkl")
-            save_to_file(save_path, model)
-            print(f"Finished training of {name} with {eps}. Model saved to {save_path}")
+            synth_data = model.generate(len(data))
+            df = pd.DataFrame(synth_data.data)
+
+            os.makedirs("data_synthetic", exist_ok=True)
+            save_path = os.path.join("data_synthetic", f"synthcity_{name}_{eps}eps.csv")
+            df.to_csv(save_path, index=False)
+            print(f"Finished training of {name} with {eps}. Data saved to {save_path}")
 
 
 def generate_synthetic_data(model_path, count):
@@ -48,11 +51,4 @@ if __name__ == "__main__":
 
     training_data = pd.DataFrame(np.hstack((features, labels)))
 
-    #train(eps_values=[1, 5, 10], data=training_data, models=["pategan"])
-
-    #generate_synthetic_data(model_path=os.path.join("models", "synthcity_pategan_1eps.pkl"), count=len(features))
-    #generate_synthetic_data(model_path=os.path.join("models", "synthcity_pategan_5eps.pkl"), count=len(features))
-    #generate_synthetic_data(model_path=os.path.join("models", "synthcity_pategan_10eps.pkl"), count=len(features))
-    generate_synthetic_data(model_path=os.path.join("models", "synthcity_dpgan_1eps.pkl"), count=len(features))
-    generate_synthetic_data(model_path=os.path.join("models", "synthcity_dpgan_5eps.pkl"), count=len(features))
-    generate_synthetic_data(model_path=os.path.join("models", "synthcity_dpgan_10eps.pkl"), count=len(features))
+    train(eps_values=[1, 5, 10], data=training_data, models=["dpgan"])
