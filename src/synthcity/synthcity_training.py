@@ -22,7 +22,7 @@ def train(eps_values, data, models):
             model.fit(data)
 
             os.makedirs("models", exist_ok=True)
-            save_path = os.path.join("models", f"synthcity_pategan_{eps}eps.pkl")
+            save_path = os.path.join("models", f"synthcity_{name}_{eps}eps.pkl")
             save_to_file(save_path, model)
             print(f"Finished training of {name} with {eps}. Model saved to {save_path}")
 
@@ -51,11 +51,11 @@ if __name__ == "__main__":
     train(eps_values=[1, 5, 10], data=training_data, models=["pategan"])
 
     generate_synthetic_data(
-        model_path=os.path.join("data", "models", "synthcity_pategan_1eps.pkl"), count=len(features)
+        model_path=os.path.join("models", "synthcity_pategan_1eps.pkl"), count=len(features)
     )
     generate_synthetic_data(
-        model_path=os.path.join("data", "models", "synthcity_pategan_5eps.pkl"), count=len(features)
+        model_path=os.path.join("models", "synthcity_pategan_5eps.pkl"), count=len(features)
     )
     generate_synthetic_data(
-        model_path=os.path.join("data", "models", "synthcity_pategan_10eps.pkl"), count=len(features)
+        model_path=os.path.join("models", "synthcity_pategan_10eps.pkl"), count=len(features)
     )
