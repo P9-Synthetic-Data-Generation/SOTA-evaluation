@@ -33,7 +33,7 @@ def generate_synthetic_data(model_path, count):
     df = pd.DataFrame(data.data)
 
     os.makedirs("data_synthetic", exist_ok=True)
-    filename = model_path.split(".")[0]
+    filename = os.path.basename(model_path).split(".")[0]
 
     save_path = os.path.join("data_synthetic", f"{filename}.csv")
     df.to_csv(save_path, index=False)
@@ -50,12 +50,6 @@ if __name__ == "__main__":
 
     train(eps_values=[1, 5, 10], data=training_data, models=["pategan"])
 
-    generate_synthetic_data(
-        model_path=os.path.join("models", "synthcity_pategan_1eps.pkl"), count=len(features)
-    )
-    generate_synthetic_data(
-        model_path=os.path.join("models", "synthcity_pategan_5eps.pkl"), count=len(features)
-    )
-    generate_synthetic_data(
-        model_path=os.path.join("models", "synthcity_pategan_10eps.pkl"), count=len(features)
-    )
+    generate_synthetic_data(model_path=os.path.join("models", "synthcity_pategan_1eps.pkl"), count=len(features))
+    generate_synthetic_data(model_path=os.path.join("models", "synthcity_pategan_5eps.pkl"), count=len(features))
+    generate_synthetic_data(model_path=os.path.join("models", "synthcity_pategan_10eps.pkl"), count=len(features))
