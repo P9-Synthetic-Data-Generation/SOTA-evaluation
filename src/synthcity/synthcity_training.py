@@ -48,8 +48,11 @@ if __name__ == "__main__":
 
     training_data = pd.DataFrame(np.hstack((features, labels)))
 
-    train(eps_values=[1, 5, 10], data=training_data, models=["pategan"])
+    #train(eps_values=[1, 5, 10], data=training_data, models=["pategan"])
 
-    generate_synthetic_data(model_path=os.path.join("models", "synthcity_pategan_1eps.pkl"), count=len(features))
-    generate_synthetic_data(model_path=os.path.join("models", "synthcity_pategan_5eps.pkl"), count=len(features))
-    generate_synthetic_data(model_path=os.path.join("models", "synthcity_pategan_10eps.pkl"), count=len(features))
+    #generate_synthetic_data(model_path=os.path.join("models", "synthcity_pategan_1eps.pkl"), count=len(features))
+    #generate_synthetic_data(model_path=os.path.join("models", "synthcity_pategan_5eps.pkl"), count=len(features))
+    #generate_synthetic_data(model_path=os.path.join("models", "synthcity_pategan_10eps.pkl"), count=len(features))
+    generate_synthetic_data(model_path=os.path.join("models", "synthcity_dpgan_1eps.pkl"), count=len(features))
+    generate_synthetic_data(model_path=os.path.join("models", "synthcity_dpgan_5eps.pkl"), count=len(features))
+    generate_synthetic_data(model_path=os.path.join("models", "synthcity_dpgan_10eps.pkl"), count=len(features))
