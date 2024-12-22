@@ -9,13 +9,13 @@ sys.path.append("src")
 from utils.data_handling import data_loader
 
 
-def generate_synthetic_data(eps_values, data, models):
+def train_and_generate_synthetic_data(eps_values, data, models):
     for name in models:
         for eps in eps_values:
-            synthesizer = Synthesizer.create(name, epsilon=10 + eps)
+            synthesizer = Synthesizer.create(name, epsilon=5 + eps)
 
             print(f"Training {name} with {eps}...")
-            synthesizer.fit(data, preprocessor_eps=10)
+            synthesizer.fit(data, preprocessor_eps=5)
 
             synthetic_data = synthesizer.sample(len(data))
 
@@ -33,11 +33,10 @@ if __name__ == "__main__":
     )
     training_data = pd.DataFrame(np.hstack((features, labels)))
 
-    generate_synthetic_data(
+    train_and_generate_synthetic_data(
         eps_values=[1, 5, 10],
         data=training_data,
         models=[
             "patectgan",
-            "dpctgan",
         ],
     )
