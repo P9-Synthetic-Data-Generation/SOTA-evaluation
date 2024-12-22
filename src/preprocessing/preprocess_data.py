@@ -106,7 +106,7 @@ def clean_data(df: pd.DataFrame, name: str) -> pd.DataFrame:
     """
     Cleans the data by:
     - Ensuring the 'VALUE' column is numeric.
-    - Removing NaN values and values outside the range of -500 to 500.
+    - Removing NaN values and values outside the range of 0 to 500.
 
     Args:
         df (pd.DataFrame): Dataframe containing the heart failure data.

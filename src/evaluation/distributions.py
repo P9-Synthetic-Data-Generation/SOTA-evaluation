@@ -46,14 +46,7 @@ def display_statistics_table(data, title):
 
 
 def calculate_feature_distributions(data):
-    print("Data shape:", data.shape)
-
-    feature_distributions = []
-
-    for i in range(9):
-        feature_data = data[:, i * 5 : (i + 1) * 5].flatten()
-        feature_distributions.append(feature_data)
-
+    feature_distributions = [data[:, i * 5 : (i + 1) * 5].flatten() for i in range(9)]
     return feature_distributions
 
 
@@ -66,14 +59,17 @@ def plot_feature_distributions(
         plt.subplot(3, 3, i + 1)
 
         for feature_data, label in zip(distributions_list, labels):
-            sns.kdeplot(feature_data[i], label=label, linewidth=3)
+            sns.kdeplot(feature_data[i], label=label, linewidth=2)
 
         plt.title(FEATURE_NAMES[i], fontsize=12)
         plt.xlabel("Value", fontsize=10)
         plt.ylabel("Density", fontsize=10)
-        plt.legend(loc="upper right", fontsize=10)
+        if i != 8:
+            plt.legend(loc="upper right", fontsize=10)
+        else:
+            plt.legend(loc="upper left", fontsize=10)
 
-    plt.subplots_adjust(hspace=0.3, wspace=0.3)
+    plt.subplots_adjust(hspace=0.28, wspace=0.22)
 
     if save:
         save_path = os.path.join("results")
@@ -84,37 +80,54 @@ def plot_feature_distributions(
         plt.show()
 
 
+def process_and_plot_distributions(original_data, file_prefix, save_name):
+    epsilon_values = [1, 5, 10]
+    labels = ["Original Data"] + [f"$\\epsilon$ = {eps}" for eps in epsilon_values]
+
+    original_distributions = calculate_feature_distributions(original_data)
+
+    synthetic_distributions = []
+    for eps in epsilon_values:
+        file_path = os.path.join("data_synthetic", f"{file_prefix}_{eps}eps.csv")
+        synthetic_data, _ = data_loader(file_path)
+        print(f"Amount of true labels in {file_path}:", sum(synthetic_data[:, -1]))
+        synthetic_data = synthetic_data[:, :-1]
+        synthetic_distributions.append(calculate_feature_distributions(synthetic_data))
+
+    plot_feature_distributions(
+        [original_distributions] + synthetic_distributions,
+        labels=labels,
+        num_features=9,
+        save=True,
+        save_name=save_name,
+    )
+
+
 if __name__ == "__main__":
     training_data_features, _ = data_loader(
         os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "training_data.pkl")
     )
 
-    pategan_1eps_data, _ = data_loader(os.path.join("data_synthetic", "synthcity_pategan_1eps.csv"))
-    print("Amount of true labels:", sum(pategan_1eps_data[:, -1]))
-    pategan_1eps_features = pategan_1eps_data[:, :-1]
-
-    pategan_5eps_data, _ = data_loader(os.path.join("data_synthetic", "synthcity_pategan_5eps.csv"))
-    print("Amount of true labels:", sum(pategan_5eps_data[:, -1]))
-    pategan_5eps_features = pategan_5eps_data[:, :-1]
-
-    pategan_5eps_data, _ = data_loader(os.path.join("data_synthetic", "synthcity_pategan_10eps.csv"))
-    print("Amount of true labels:", sum(pategan_5eps_data[:, -1]))
-    pategan_10eps_features = pategan_5eps_data[:, :-1]
-
-    original_distributions = calculate_feature_distributions(training_data_features)
-    pategan_1eps_distributions = calculate_feature_distributions(pategan_1eps_features)
-    pategan_5eps_distributions = calculate_feature_distributions(pategan_5eps_features)
-    pategan_10eps_distributions = calculate_feature_distributions(pategan_10eps_features)
-
-    plot_feature_distributions(
-        [original_distributions, pategan_1eps_distributions, pategan_5eps_distributions, pategan_10eps_distributions],
-        labels=["Original Data", "PATEGAN 1 eps", "PATEGAN 5 eps", "PATEGAN 10 eps"],
-        num_features=9,
-        save=True,
-        save_name="distribution_plot.png",
+    process_and_plot_distributions(
+        training_data_features,
+        file_prefix="smartnoise_dpctgan",
+        save_name="DPCTGAN.png",
     )
 
-    display_statistics_table(training_data_features, title="Training Data")
-    display_statistics_table(pategan_1eps_features, title="PATEGAN 1 eps")
-    display_statistics_table(pategan_5eps_features, title="PATEGAN 5 eps")
-    display_statistics_table(pategan_10eps_features, title="PATEGAN 10 eps")
+    process_and_plot_distributions(
+        training_data_features,
+        file_prefix="synthcity_pategan",
+        save_name="PATEGAN.png",
+    )
+
+    process_and_plot_distributions(
+        training_data_features,
+        file_prefix="smartnoise_patectgan",
+        save_name="PATECTGAN.png",
+    )
+
+    process_and_plot_distributions(
+        training_data_features,
+        file_prefix="synthcity_dpgan",
+        save_name="DPGAN.png",
+    )
