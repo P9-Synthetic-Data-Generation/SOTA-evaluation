@@ -34,9 +34,9 @@ if __name__ == "__main__":
     training_data = pd.DataFrame(np.hstack((features, labels)))
 
     train_and_generate_synthetic_data(
-        eps_values=[1, 5, 10],
+        eps_values=[1, 5],
         data=training_data,
         models=[
-            "patectgan",
+            "dpctgan",
         ],
     )

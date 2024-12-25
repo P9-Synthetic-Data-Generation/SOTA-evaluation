@@ -108,11 +108,11 @@ if __name__ == "__main__":
         os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "training_data.pkl")
     )
 
-    process_and_plot_distributions(
-        training_data_features,
-        file_prefix="smartnoise_dpctgan",
-        save_name="DPCTGAN.png",
-    )
+    # process_and_plot_distributions(
+    #     training_data_features,
+    #     file_prefix="smartnoise_dpctgan",
+    #     save_name="DPCTGAN.png",
+    # )
 
     process_and_plot_distributions(
         training_data_features,
