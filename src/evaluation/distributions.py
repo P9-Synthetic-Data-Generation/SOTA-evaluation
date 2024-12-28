@@ -22,27 +22,42 @@ FEATURE_NAMES = [
 ]
 
 
-def display_statistics_table(data, title):
-    stats = []
+def process_and_display_statistics_table(data_list):
+    all_stats = []
+    for k, data in enumerate(data_list):
+        stats_list = []
+        for i in range(9):
+            feature_data = data[:, i * 5 : (i + 1) * 5].flatten()
 
-    for i in range(9):
-        feature_data = data[:, i * 5 : (i + 1) * 5].flatten()
+            if k == 0:
+                stats_dict = {
+                    "Feature": FEATURE_NAMES[i],
+                    f"Mean {k + 1}": np.mean(feature_data),
+                    f"SD {k + 1}": np.std(feature_data),
+                }
+            else:
+                stats_dict = {
+                    f"Mean {k + 1}": np.mean(feature_data),
+                    f"SD {k + 1}": np.std(feature_data),
+                }
+            stats_list.append(stats_dict)
+        all_stats.append(stats_list)
 
-        stats_dict = {
-            "Feature": FEATURE_NAMES[i],
-            "Mean": np.mean(feature_data),
-            "Median": np.median(feature_data),
-            "Std Dev": np.std(feature_data),
-            "Variance": np.var(feature_data),
-            "Min": np.min(feature_data),
-            "Max": np.max(feature_data),
-        }
-        stats.append(stats_dict)
+    headers = []
+    for stats_list in all_stats:
+        headers.extend(stats_list[0].keys())
 
-    headers = stats[0].keys()
-    rows = [list(stat.values()) for stat in stats]
-    print(title)
-    print(tabulate(rows, headers=headers, tablefmt="grid"))
+    final_rows = []
+    for l, stats in enumerate(all_stats):
+        rows = [list(stat.values()) for stat in stats]
+        if l == 0:
+            final_rows = rows
+        else:
+            for n, row in enumerate(rows):
+                final_rows[n] = final_rows[n] + row
+
+    print(final_rows)
+    print(tabulate(final_rows, headers=headers, tablefmt="grid"))
 
 
 def calculate_feature_distributions(data):
@@ -114,20 +129,33 @@ if __name__ == "__main__":
     #     save_name="DPCTGAN.png",
     # )
 
-    process_and_plot_distributions(
-        training_data_features,
-        file_prefix="synthcity_pategan",
-        save_name="PATEGAN.png",
-    )
+    # process_and_plot_distributions(
+    #     training_data_features,
+    #     file_prefix="synthcity_pategan",
+    #     save_name="PATEGAN.png",
+    # )
 
-    process_and_plot_distributions(
-        training_data_features,
-        file_prefix="smartnoise_patectgan",
-        save_name="PATECTGAN.png",
-    )
+    # process_and_plot_distributions(
+    #     training_data_features,
+    #     file_prefix="smartnoise_patectgan",
+    #     save_name="PATECTGAN.png",
+    # )
 
-    process_and_plot_distributions(
-        training_data_features,
-        file_prefix="synthcity_dpgan",
-        save_name="DPGAN.png",
-    )
+    # process_and_plot_distributions(
+    #     training_data_features,
+    #     file_prefix="synthcity_dpgan",
+    #     save_name="DPGAN.png",
+    # )
+
+    file_prefixes = ["smartnoise_dpctgan", "synthcity_pategan", "smartnoise_patectgan", "synthcity_dpgan"]
+    eps_values = [1, 5, 10]
+    data_list = [training_data_features]
+
+    for file_prefix in file_prefixes:
+        for eps in eps_values:
+            file_path = os.path.join("data_synthetic", f"{file_prefix}_{eps}eps.csv")
+            synthetic_data, _ = data_loader(file_path)
+            synthetic_data = synthetic_data[:, :-1]
+            data_list.append(synthetic_data)
+
+    process_and_display_statistics_table(data_list)
