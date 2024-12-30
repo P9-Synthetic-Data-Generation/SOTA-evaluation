@@ -49,7 +49,7 @@ def evaluate_synthetic_data(real_data, synthetic_data, bins=50):
 
 def display_metrics(metrics):
     """
-    Display the metrics in a tabular format using tabulate.
+    Display the metrics in a tabular format.
 
     Parameters:
         metrics (dict): A dictionary of metrics to display.
