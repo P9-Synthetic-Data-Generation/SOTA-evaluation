@@ -22,7 +22,16 @@ FEATURE_NAMES = [
 ]
 
 
-def process_and_display_statistics_table(data_list):
+def process_and_display_statistics_table(original_data, file_prefixes, epsilon_values):
+    data_list = [original_data]
+
+    for file_prefix in file_prefixes:
+        for eps in epsilon_values:
+            file_path = os.path.join("data_synthetic", f"{file_prefix}_{eps}eps.csv")
+            synthetic_data, _ = data_loader(file_path)
+            synthetic_data = synthetic_data[:, :-1]
+            data_list.append(synthetic_data)
+
     all_stats = []
     for k, data in enumerate(data_list):
         stats_list = []
@@ -48,9 +57,9 @@ def process_and_display_statistics_table(data_list):
         headers.extend(stats_list[0].keys())
 
     final_rows = []
-    for l, stats in enumerate(all_stats):
+    for j, stats in enumerate(all_stats):
         rows = [list(stat.values()) for stat in stats]
-        if l == 0:
+        if j == 0:
             final_rows = rows
         else:
             for n, row in enumerate(rows):
@@ -80,9 +89,9 @@ def plot_feature_distributions(
         plt.xlabel("Value", fontsize=10)
         plt.ylabel("Density", fontsize=10)
         if i != 8:
-            plt.legend(loc="upper right", fontsize=10)
+            plt.legend(loc="upper right", fontsize=8)
         else:
-            plt.legend(loc="upper left", fontsize=10)
+            plt.legend(loc="upper left", fontsize=8)
 
     plt.subplots_adjust(hspace=0.28, wspace=0.22)
 
@@ -95,19 +104,17 @@ def plot_feature_distributions(
         plt.show()
 
 
-def process_and_plot_distributions(original_data, file_prefix, save_name):
-    epsilon_values = [1, 5, 10]
-    labels = ["Original Data"] + [f"$\\epsilon$ = {eps}" for eps in epsilon_values]
-
+def process_and_plot_distributions(original_data, file_prefixes, epsilon_values, labels, save_name):
     original_distributions = calculate_feature_distributions(original_data)
 
     synthetic_distributions = []
-    for eps in epsilon_values:
-        file_path = os.path.join("data_synthetic", f"{file_prefix}_{eps}eps.csv")
-        synthetic_data, _ = data_loader(file_path)
-        print(f"Amount of true labels in {file_path}:", sum(synthetic_data[:, -1]))
-        synthetic_data = synthetic_data[:, :-1]
-        synthetic_distributions.append(calculate_feature_distributions(synthetic_data))
+    for file_prefix in file_prefixes:
+        for eps in epsilon_values:
+            file_path = os.path.join("data_synthetic", f"{file_prefix}_{eps}eps.csv")
+            synthetic_data, _ = data_loader(file_path)
+            print(f"Amount of true labels in {file_path}:", sum(synthetic_data[:, -1]))
+            synthetic_data = synthetic_data[:, :-1]
+            synthetic_distributions.append(calculate_feature_distributions(synthetic_data))
 
     plot_feature_distributions(
         [original_distributions] + synthetic_distributions,
@@ -123,39 +130,30 @@ if __name__ == "__main__":
         os.path.join("data", "mimic-iii_preprocessed", "pickle_data", "training_data.pkl")
     )
 
-    # process_and_plot_distributions(
-    #     training_data_features,
-    #     file_prefix="smartnoise_dpctgan",
-    #     save_name="DPCTGAN.png",
-    # )
+    labels = [
+        "Original Data",
+        "PATEGAN (Synthcity)",
+        "DPGAN (Synthcity)",
+        "PATECTGAN (SmartNoise)",
+        "DPCTGAN (SmartNoise)",
+    ]
+
+    file_prefixes = [
+        "synthcity_pategan",
+        "synthcity_dpgan",
+        "smartnoise_patectgan",
+        "smartnoise_dpctgan",
+    ]
+    eps_values = [10]
+
+    process_and_display_statistics_table(
+        original_data=training_data_features, file_prefixes=file_prefixes, epsilon_values=eps_values
+    )
 
     # process_and_plot_distributions(
     #     training_data_features,
-    #     file_prefix="synthcity_pategan",
-    #     save_name="PATEGAN.png",
+    #     file_prefixes=file_prefixes,
+    #     epsilon_values=eps_values,
+    #     labels=labels,
+    #     save_name="1eps_comparison.png",
     # )
-
-    # process_and_plot_distributions(
-    #     training_data_features,
-    #     file_prefix="smartnoise_patectgan",
-    #     save_name="PATECTGAN.png",
-    # )
-
-    # process_and_plot_distributions(
-    #     training_data_features,
-    #     file_prefix="synthcity_dpgan",
-    #     save_name="DPGAN.png",
-    # )
-
-    file_prefixes = ["smartnoise_dpctgan", "synthcity_pategan", "smartnoise_patectgan", "synthcity_dpgan"]
-    eps_values = [1, 5, 10]
-    data_list = [training_data_features]
-
-    for file_prefix in file_prefixes:
-        for eps in eps_values:
-            file_path = os.path.join("data_synthetic", f"{file_prefix}_{eps}eps.csv")
-            synthetic_data, _ = data_loader(file_path)
-            synthetic_data = synthetic_data[:, :-1]
-            data_list.append(synthetic_data)
-
-    process_and_display_statistics_table(data_list)
