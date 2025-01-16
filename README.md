@@ -1,5 +1,5 @@
 # SOTA-evaluation
-This repository contains code for training state-of-the-art generative adversarial networks (GANs) with differential privacy to generate synthetic data, specifically in the context of healthcare data from the MIMIC-IV dataset.
+This repository contains code for training state-of-the-art generative adversarial networks (GANs) with differential privacy to generate synthetic data, specifically in the context of healthcare data from the MIMIC-III dataset.
 
 ## Table of Contents
 1. [Installation](#installation)
